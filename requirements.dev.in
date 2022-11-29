@@ -1,0 +1,7 @@
+-c requirements.txt
+rich
+black
+icecream
+mypy
+pip-tools
+pre-commit

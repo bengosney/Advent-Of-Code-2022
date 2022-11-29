@@ -1,0 +1,19 @@
+[project]
+name = "Advent Of Code"
+version = "2022"
+description = "My answeres to Advent of Code"
+authors = ["Ben Gosney <bengosney@googlemail.com>"]
+python = "^3.11"
+homepage = "https://github.com/bengosney/Advent-Of-Code-2022"
+repository = "https://github.com/bengosney/Advent-Of-Code-2022"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 128
+target-version = ['py311']
+
+[tool.pycln]
+all = true

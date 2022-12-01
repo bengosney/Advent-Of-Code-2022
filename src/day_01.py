@@ -14,7 +14,15 @@ def part_1(input: str) -> int:
 
 
 def part_2(input: str) -> int:
-    pass
+    elves = input.split("\n\n")
+
+    cal_counts = []
+    for elve in elves:
+        cal_counts.append(sum(map(int, elve.split("\n"))))
+
+    cal_counts.sort(reverse=True)
+
+    return sum(cal_counts[:3])
 
 
 # -- Tests
@@ -42,19 +50,19 @@ def test_part_1():
     assert part_1(test_input) == 24000
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input) == 45000
 
 
-# def test_part_1_real():
-#     real_input = read_input(__file__)
-#     assert part_1(real_input) is not None
+def test_part_1_real():
+    real_input = read_input(__file__)
+    assert part_1(real_input) == 70720
 
 
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input) == 207148
 
 
 # -- Main

@@ -3,7 +3,14 @@ from utils import read_input
 
 
 def part_1(input: str) -> int:
-    pass
+    elves = input.split("\n\n")
+
+    max_cals = 0
+    for elve in elves:
+        cals = sum(map(int, elve.split("\n")))
+        max_cals = max(max_cals, cals)
+
+    return max_cals
 
 
 def part_2(input: str) -> int:
@@ -14,13 +21,25 @@ def part_2(input: str) -> int:
 
 
 def get_example_input() -> str:
-    return """
-    """
+    return """1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000"""
 
 
 def test_part_1():
     test_input = get_example_input()
-    assert part_1(test_input) is not None
+    assert part_1(test_input) == 24000
 
 
 # def test_part_2():

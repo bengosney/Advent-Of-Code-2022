@@ -5,7 +5,7 @@ from collections.abc import Iterable
 
 def read_input(day: str) -> str:
     file = os.path.splitext(os.path.basename(day))[0]
-    with open(os.path.join(os.path.dirname(__file__), "..", "inputs", f"{file}.txt")) as f:
+    with open(os.path.join(os.path.dirname(__file__), "..", "..", "inputs", f"{file}.txt")) as f:
         return f.read().strip().strip("\n\r")
 
 

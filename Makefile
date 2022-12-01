@@ -84,7 +84,7 @@ install: $(PIP_SYNC_PATH) requirements.txt $(REQS) ## Install requirements (defa
 
 inputs/day_%.txt: $(COOKIEFILE)
 	echo $@
-	curl --cookie "$(shell cat $^)" -s -L -o $@ https://adventofcode.com/$(shell date +%Y)/day/$(shell echo "$@" | egrep -o "[0-9]+" | sed 's/^0*//')/input
+	curl -H 'User-Agent: Makefile - curl : bengosney@googlemail.com' --cookie "$(shell cat $^)" -s -L -o $@ https://adventofcode.com/$(shell date +%Y)/day/$(shell echo "$@" | egrep -o "[0-9]+" | sed 's/^0*//')/input
 
 src/day_%.py:
 	cp template.py.template $@

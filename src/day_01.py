@@ -2,27 +2,25 @@
 from utils import read_input
 
 
+def get_calorie_list(input: str) -> list[int]:
+    """Get the list of total calories.
+    .
+
+        Split the list on blank lines, then for each of thoes split by line,
+        parse as int, sum up and sort to get a list of total calories per
+        elve.
+    """
+    return sorted(map(lambda e: sum(map(int, e.split("\n"))), input.split("\n\n")), reverse=True)
+
+
 def part_1(input: str) -> int:
-    elves = input.split("\n\n")
-
-    max_cals = 0
-    for elve in elves:
-        cals = sum(map(int, elve.split("\n")))
-        max_cals = max(max_cals, cals)
-
-    return max_cals
+    """Get the largest amount of calories carried by an Elf."""
+    return get_calorie_list(input)[0]
 
 
 def part_2(input: str) -> int:
-    elves = input.split("\n\n")
-
-    cal_counts = []
-    for elve in elves:
-        cal_counts.append(sum(map(int, elve.split("\n"))))
-
-    cal_counts.sort(reverse=True)
-
-    return sum(cal_counts[:3])
+    """Get the largest amount of calories carried by an Elf."""
+    return sum(get_calorie_list(input)[:3])
 
 
 # -- Tests

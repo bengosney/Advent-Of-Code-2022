@@ -47,16 +47,12 @@ def part_1(input: str) -> int:
 
 
 def fix_game(them: int, you: int) -> int:
-    losses = {
-        ROCK: SCISSORS,
-        PAPAER: ROCK,
-        SCISSORS: PAPAER,
-    }
+    losses = dict(zip(range(1, 4), [3, 1, 2]))
 
     actions = {
         LOOSE: losses,
         WIN: {v: k + 6 for k, v in losses.items()},
-        DRAW: {1: 4, 2: 5, 3: 6},
+        DRAW: dict(zip(range(1, 4), range(4, 7))),
     }
 
     return actions[you][them]

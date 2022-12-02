@@ -90,7 +90,7 @@ src/day_%.py:
 	cp template.py.template $@
 
 mypy: $(ALLDAYS)
-	mypy $^
+	mypy --check-untyped-defs $^
 
 pytest: src/*.py
 	pytest $^

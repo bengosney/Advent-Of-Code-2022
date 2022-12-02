@@ -52,25 +52,20 @@ def fix_game(them: int, you: int) -> int:
         PAPAER: ROCK,
         SCISSORS: PAPAER,
     }
-    wins = {v: k for k, v in losses.items()}
 
-    if you == LOOSE:
-        print(f"loose {them} {you} : 0 + {losses[them]}")
-        return 0 + losses[them]
+    actions = {
+        LOOSE: losses,
+        WIN: {v: k + 6 for k, v in losses.items()},
+        DRAW: {1: 4, 2: 5, 3: 6},
+    }
 
-    if you == WIN:
-        print(f"win {them} {you} : 6 + {wins[them]}")
-        return 6 + wins[them]
-
-    print(f"draw {them} {you} : 3 + {them}")
-    return 3 + them
+    return actions[you][them]
 
 
 def part_2(input: str) -> int:
     score = 0
     for game in input.split("\n"):
         them, you = game.split(" ")
-
         score += fix_game(int(thems[them]), int(yous[you]))
 
     return score

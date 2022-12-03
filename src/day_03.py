@@ -1,7 +1,10 @@
 # First Party
 from utils import read_input
 
-priorities = {**{chr(i + 96): i for i in range(1, 27)}, **{chr(i + 64): i + 26 for i in range(1, 27)}}
+priorities = {
+    **{chr(i + 96): i for i in range(1, 27)},
+    **{chr(i + 38): i for i in range(26, 53)},
+}
 
 
 def part_1(input: str) -> int:
@@ -18,7 +21,7 @@ def part_2(input: str) -> int:
     priority = 0
     lines = input.split("\n")
     for i in range(0, len(lines), 3):
-        in_group = set(set(lines[i]).intersection(lines[i + 1])).intersection(lines[i + 2])
+        in_group = set(lines[i]).intersection(lines[i + 1]).intersection(lines[i + 2])
         for c in in_group:
             priority += priorities[c]
 

@@ -6,7 +6,7 @@ from collections.abc import Iterable
 def read_input(day: str) -> str:
     file = os.path.splitext(os.path.basename(day))[0]
     with open(os.path.join(os.path.dirname(__file__), "..", "..", "inputs", f"{file}.txt")) as f:
-        return f.read().strip().strip("\n\r")
+        return f.read().rstrip().rstrip("\n\r")
 
 
 def input_to_ints(input: str) -> list[int]:

@@ -7,35 +7,21 @@ from utils import read_input
 
 
 def parse_input(input: str) -> tuple[dict[int, list[str]], list[dict[str, int]]]:
-    inital, moves = input.split("\n\n")
-    inital = inital.split("\n")
-    inital.pop()
-    inital.reverse()
+    inital, raw_moves = map(lambda i: i.split("\n"), input.split("\n\n"))
 
     stacks = defaultdict(lambda: [])
-
-    for row in inital:
+    for row in reversed(inital[:-1]):
         for i in range(1, len(row), 4):
             if row[i] != " ":
                 stacks[i // 4].append(row[i])
 
-    moves = moves.split("\n")
-    regex = r"^move\s(?P<count>\d+)\sfrom\s(?P<from>\d+)\sto\s(?P<to>\d+)$"
-    parsed_moves = []
-    for move in moves:
-        parsed = re.search(regex, move, re.MULTILINE)
+    moves = []
+    for move in raw_moves:
+        parsed = re.search(r"^move\s(?P<count>\d+)\sfrom\s(?P<from>\d+)\sto\s(?P<to>\d+)$", move, re.MULTILINE)
         if parsed is not None:
-            parsed_moves.append({k: int(v) for k, v in parsed.groupdict().items()})
+            moves.append({k: int(v) for k, v in parsed.groupdict().items()})
 
-    return dict(stacks), parsed_moves
-
-
-def get_ans(stacks):
-    ans = ""
-    for i in range(len(stacks)):
-        ans += f"{stacks[i][-1]}"
-
-    return ans
+    return dict(stacks), moves
 
 
 def part_1(input: str) -> str:
@@ -45,7 +31,7 @@ def part_1(input: str) -> str:
         for _ in range(move["count"]):
             stacks[move["to"] - 1].append(stacks[move["from"] - 1].pop())
 
-    return get_ans(stacks)
+    return "".join(f"{stacks[i][-1]}" for i in range(len(stacks)))
 
 
 def part_2(input: str) -> str:
@@ -56,11 +42,10 @@ def part_2(input: str) -> str:
         for _ in range(move["count"]):
             hold.append(stacks[move["from"] - 1].pop())
 
-        hold.reverse()
-        for c in hold:
+        for c in reversed(hold):
             stacks[move["to"] - 1].append(c)
 
-    return get_ans(stacks)
+    return "".join(f"{stacks[i][-1]}" for i in range(len(stacks)))
 
 
 # -- Tests

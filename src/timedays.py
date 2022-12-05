@@ -9,7 +9,7 @@ from time import time
 from utils import read_input
 
 # Third Party
-import click
+import typer
 from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
@@ -32,9 +32,6 @@ def timeit(day: str, iterations: int = 1, progress: Callable = lambda: None) -> 
     return mean(times[1]), mean(times[2])
 
 
-@click.command(help="Time the solutions\n\nExample:\n\n$ timeit day_01\n\nLeave blank for all days")
-@click.option("--iterations", "-i", default=10, help="Number of times to run each part")
-@click.argument("days", nargs=-1)
 def time_everything(iterations: int = 10, days: list[str] = []) -> None:
     table = Table(title=f"AOC 2021 - Timings\n({iterations:,} iterations)")
 
@@ -58,4 +55,4 @@ def time_everything(iterations: int = 10, days: list[str] = []) -> None:
 
 
 if __name__ == "__main__":
-    time_everything()
+    typer.run(time_everything)

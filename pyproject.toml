@@ -1,9 +1,11 @@
 [project]
-name = "Advent Of Code"
+name = "advent_of_code"
 version = "2022"
-description = "My answeres to Advent of Code"
-authors = ["Ben Gosney <bengosney@googlemail.com>"]
-python = "^3.11"
+description = "My answeres to Advent of Code 2022"
+authors = [{ name = "Ben Gosney", email = "<bengosney@googlemail.com>" }]
+requires-python = "^3.11"
+
+[project.urls]
 homepage = "https://github.com/bengosney/Advent-Of-Code-2022"
 repository = "https://github.com/bengosney/Advent-Of-Code-2022"
 

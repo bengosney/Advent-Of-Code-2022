@@ -16,19 +16,11 @@ def overlaps(one: list[int], two: list[int]) -> int:
 
 
 def part_1(input: str) -> int:
-    total = 0
-    for line in input.split("\n"):
-        total += contains(*map(expand, line.split(",")))
-
-    return total
+    return sum(map(lambda line: contains(*map(expand, line.split(","))), input.split("\n")))
 
 
 def part_2(input: str) -> int:
-    total = 0
-    for line in input.split("\n"):
-        total += overlaps(*map(expand, line.split(",")))
-
-    return total
+    return sum(map(lambda line: overlaps(*map(expand, line.split(","))), input.split("\n")))
 
 
 # -- Tests

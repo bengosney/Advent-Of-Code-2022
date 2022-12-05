@@ -13,7 +13,7 @@ def parse_input(input: str) -> tuple[dict[int, list[str]], list[dict[str, int]]]
     for row in reversed(inital[:-1]):
         for i in range(1, len(row), 4):
             if row[i] != " ":
-                stacks[i // 4].append(row[i])
+                stacks[(i // 4) + 1].append(row[i])
 
     moves = []
     for move in raw_moves:
@@ -29,9 +29,9 @@ def part_1(input: str) -> str:
 
     for move in moves:
         for _ in range(move["count"]):
-            stacks[move["to"] - 1].append(stacks[move["from"] - 1].pop())
+            stacks[move["to"]].append(stacks[move["from"]].pop())
 
-    return "".join(f"{stacks[i][-1]}" for i in range(len(stacks)))
+    return "".join(f"{stack[-1]}" for stack in stacks.values())
 
 
 def part_2(input: str) -> str:
@@ -40,12 +40,12 @@ def part_2(input: str) -> str:
     for move in moves:
         hold = []
         for _ in range(move["count"]):
-            hold.append(stacks[move["from"] - 1].pop())
+            hold.append(stacks[move["from"]].pop())
 
         for c in reversed(hold):
-            stacks[move["to"] - 1].append(c)
+            stacks[move["to"]].append(c)
 
-    return "".join(f"{stacks[i][-1]}" for i in range(len(stacks)))
+    return "".join(f"{stack[-1]}" for stack in stacks.values())
 
 
 # -- Tests

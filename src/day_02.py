@@ -11,13 +11,10 @@ LOOSE = 1
 DRAW = 2
 WIN = 3
 
-thems: dict[str, int] = {
+moves: dict[str, int] = {
     "A": ROCK,
     "B": PAPAER,
     "C": SCISSORS,
-}
-
-yous: dict[str, int] = {
     "X": ROCK,
     "Y": PAPAER,
     "Z": SCISSORS,
@@ -41,13 +38,13 @@ def part_1(input: str) -> int:
     score = 0
     for game in input.split("\n"):
         them, you = game.split(" ")
-        score += scores[(thems[them], yous[you])] + yous[you]
+        score += scores[(moves[them], moves[you])] + moves[you]
 
     return score
 
 
 def fix_game(them: int, you: int) -> int:
-    losses = dict(zip(range(1, 4), [3, 1, 2]))
+    losses = dict(zip([ROCK, PAPAER, SCISSORS], [SCISSORS, ROCK, PAPAER]))
 
     actions = {
         LOOSE: losses,
@@ -62,7 +59,7 @@ def part_2(input: str) -> int:
     score = 0
     for game in input.split("\n"):
         them, you = game.split(" ")
-        score += fix_game(int(thems[them]), int(yous[you]))
+        score += fix_game(moves[them], moves[you])
 
     return score
 

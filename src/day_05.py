@@ -28,8 +28,7 @@ def part_1(input: str) -> str:
     stacks, moves = parse_input(input)
 
     for move in moves:
-        for _ in range(move["count"]):
-            stacks[move["to"]].append(stacks[move["from"]].pop())
+        stacks[move["to"]].extend([stacks[move["from"]].pop() for _ in range(move["count"])])
 
     return "".join(f"{stack[-1]}" for stack in stacks.values())
 
@@ -38,9 +37,7 @@ def part_2(input: str) -> str:
     stacks, moves = parse_input(input)
 
     for move in moves:
-        hold = [stacks[move["from"]].pop() for _ in range(move["count"])]
-        for c in reversed(hold):
-            stacks[move["to"]].append(c)
+        stacks[move["to"]].extend(reversed([stacks[move["from"]].pop() for _ in range(move["count"])]))
 
     return "".join(f"{stack[-1]}" for stack in stacks.values())
 

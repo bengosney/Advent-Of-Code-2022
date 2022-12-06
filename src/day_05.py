@@ -38,10 +38,7 @@ def part_2(input: str) -> str:
     stacks, moves = parse_input(input)
 
     for move in moves:
-        hold = []
-        for _ in range(move["count"]):
-            hold.append(stacks[move["from"]].pop())
-
+        hold = [stacks[move["from"]].pop() for _ in range(move["count"])]
         for c in reversed(hold):
             stacks[move["to"]].append(c)
 

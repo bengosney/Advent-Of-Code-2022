@@ -3,8 +3,7 @@
 .PRECIOUS: requirements.%.in
 
 HOOKS=$(.git/hooks/pre-commit)
-INS=$(wildcard requirements.*.in)
-REQS=$(subst in,txt,$(INS))
+REQS=$(wildcard requirements.*.txt)
 
 PYTHON_VERSION:=$(shell python --version | cut -d " " -f 2)
 PIP_PATH:=.direnv/python-$(PYTHON_VERSION)/bin/pip
@@ -31,17 +30,11 @@ help: ## Display this help
 	python -m pip install pre-commit
 	pre-commit autoupdate
 
-requirements.%.in:
-	echo "-c requirements.txt" > $@
-
-requirements.in:
-	@touch $@
-
-requirements.%.txt: $(PIP_SYNC_PATH) requirements.%.in requirements.txt
+requirements.%.txt: $(PIP_SYNC_PATH) pyproject.toml
 	@echo "Builing $@"
-	@python -m piptools compile --generate-hashes -q -o $@ $(filter-out $<,$^)
+	@python -m piptools compile --generate-hashes --extra $* -q -o $@ $(filter-out $<,$^)
 
-requirements.txt: $(PIP_SYNC_PATH) requirements.in
+requirements.txt: $(PIP_SYNC_PATH) pyproject.toml
 	@echo "Builing $@"
 	@python -m piptools compile --generate-hashes -q $(filter-out $<,$^)
 
@@ -75,6 +68,7 @@ init: .direnv .git/hooks/pre-commit $(PIP_SYNC_PATH) requirements.dev.txt ## Ini
 clean: ## Remove all build files
 	find . -name '*.pyc' -delete
 	find . -type d -name '__pycache__' -delete
+	find . -type d -name '*.egg-info' -exec rm -rf {} +
 	rm -rf .pytest_cache
 	rm -f .testmondata
 

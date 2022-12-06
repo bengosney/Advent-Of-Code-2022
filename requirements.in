@@ -1,5 +1,0 @@
-pytest
-pytest-testmon
-pytest-watch
-rich
-typer[all]

@@ -1,5 +1,4 @@
 # Standard Library
-from collections import defaultdict
 
 # First Party
 from utils import read_input
@@ -12,32 +11,33 @@ LOOSE = 1
 DRAW = 2
 WIN = 3
 
-thems = {
+thems: dict[str, int] = {
     "A": ROCK,
     "B": PAPAER,
     "C": SCISSORS,
 }
 
-yous = {
+yous: dict[str, int] = {
     "X": ROCK,
     "Y": PAPAER,
     "Z": SCISSORS,
 }
 
 
-def get_scores() -> dict[tuple[int, int], int]:
-    scores = defaultdict(lambda: 0)
-    scores[(ROCK, PAPAER)] = 6
-    scores[(PAPAER, SCISSORS)] = 6
-    scores[(SCISSORS, ROCK)] = 6
-    for i in [ROCK, PAPAER, SCISSORS]:
-        scores[(i, i)] = 3
-
-    return scores
+scores: dict[tuple[int, int], int] = {
+    (ROCK, PAPAER): 6,
+    (PAPAER, SCISSORS): 6,
+    (SCISSORS, ROCK): 6,
+    (ROCK, ROCK): 3,
+    (PAPAER, PAPAER): 3,
+    (SCISSORS, SCISSORS): 3,
+    (PAPAER, ROCK): 0,
+    (SCISSORS, PAPAER): 0,
+    (ROCK, SCISSORS): 0,
+}
 
 
 def part_1(input: str) -> int:
-    scores = get_scores()
     score = 0
     for game in input.split("\n"):
         them, you = game.split(" ")

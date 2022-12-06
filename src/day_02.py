@@ -49,7 +49,7 @@ def fix_game(them: int, you: int) -> int:
     actions = {
         LOOSE: losses,
         WIN: {v: k + 6 for k, v in losses.items()},
-        DRAW: dict(zip(range(1, 4), range(4, 7))),
+        DRAW: dict(zip([ROCK, PAPAER, SCISSORS], map(lambda m: m + 3, [ROCK, PAPAER, SCISSORS]))),
     }
 
     return actions[you][them]

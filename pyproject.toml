@@ -13,7 +13,6 @@ dev = [
     "pytest",
     "pytest-testmon",
     "pytest-watch",
-    "rich",
     "black",
     "icecream",
     "mypy",

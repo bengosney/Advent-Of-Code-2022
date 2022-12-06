@@ -35,14 +35,14 @@ def test_part_2():
     assert part_2(test_input) == 19
 
 
-# def test_part_1_real():
-#     real_input = read_input(__file__)
-#     assert part_1(real_input) is not None
+def test_part_1_real():
+    real_input = read_input(__file__)
+    assert part_1(real_input) == 1953
 
 
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input) == 2301
 
 
 # -- Main

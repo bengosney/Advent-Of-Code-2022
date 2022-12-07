@@ -1,54 +1,60 @@
 # Standard Library
 from collections import defaultdict
-from os.path import abspath
+from functools import lru_cache
+from pathlib import PosixPath
 
 # First Party
 from utils import read_input
 
 
 class dir:
-    def __init__(self) -> None:
+    def __init__(self, tree) -> None:
         self.files = {}
         self.children = []
+        self.dir_tree = tree
 
+    @lru_cache
     def sum(self) -> int:
         return sum([v for v in self.files.values()])
 
-    def total_size(self, tree: dict[str, "dir"]):
+    @lru_cache
+    def total_size(self) -> int:
         total = self.sum()
 
         for c in self.children:
-            total += tree[c].total_size(tree)
+            total += self.dir_tree[c].total_size()
 
         return total
 
     @staticmethod
-    def parse(input: str):
-        dir_tree = defaultdict(lambda: dir())
+    def parse(input: str) -> dict[str, "dir"]:
+        dir_tree = defaultdict(lambda: dir(dir_tree))
         cwd = ""
 
         for line in input.split("\n"):
-            if line.startswith("$"):
-                if line.startswith("$ cd"):
-                    cwd = abspath("/".join([cwd, line[5:]])).replace("//", "/")
-            else:
-                left, right = line.split(" ")
+            match line.split(" "):
+                case ("$", *args):
+                    match args:
+                        case ("cd", d):
+                            cwd = str(PosixPath(cwd, d).resolve())
+                case ("dir", d):
+                    dir_tree[cwd].children.append(str(PosixPath(cwd, d).resolve()))
+                case (size, name):
+                    dir_tree[cwd].files[name] = int(size)
+                case _:
+                    raise Exception(f"Unknow line: {line}")
 
-                if left == "dir":
-                    dir_tree[cwd].children.append(f"{cwd}/{right}".replace("//", "/"))
-                else:
-                    dir_tree[cwd].files[right] = int(left)
-
-        return dict(dir_tree)
+        return dir_tree
 
 
 def part_1(input: str) -> int:
+    MAX_SIZE = 100000
+
     dir_tree = dir.parse(input)
 
     totals = 0
     for folder in dir_tree.values():
-        total = folder.total_size(dir_tree)
-        if total <= 100000:
+        if (total := folder.total_size()) <= MAX_SIZE:
             totals += total
 
     return totals
@@ -60,12 +66,11 @@ def part_2(input: str) -> int:
 
     dir_tree = dir.parse(input)
 
-    needed_space = MIN_FREE - (MAX_SIZE - dir_tree["/"].total_size(dir_tree))
+    needed_space = MIN_FREE - (MAX_SIZE - dir_tree["/"].total_size())
 
     totals = []
     for folder in dir_tree.values():
-        total = folder.total_size(dir_tree)
-        if total >= needed_space:
+        if (total := folder.total_size()) >= needed_space:
             totals.append(total)
 
     return min(totals)

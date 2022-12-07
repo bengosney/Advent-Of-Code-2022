@@ -36,7 +36,7 @@ def time_it(day: str, iterations: int = 1, progress: Callable = lambda: None) ->
 
 @app.command()
 def benchmark(iterations: int = 10, days: list[str] = []) -> None:
-    table = Table(title=f"AOC 2021 - Timings\n({iterations:,} iterations)")
+    table = Table(title=f"AOC 2022 - Timings\n({iterations:,} iterations)")
 
     table.add_column("Day", justify="center", style="bold")
     table.add_column("Part 1", justify="right")

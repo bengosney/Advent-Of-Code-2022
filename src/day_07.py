@@ -1,7 +1,7 @@
 # Standard Library
 from collections import defaultdict
 from functools import lru_cache
-from pathlib import PosixPath
+from os import path
 
 # First Party
 from utils import read_input
@@ -31,14 +31,18 @@ class dir:
         dir_tree = defaultdict(lambda: dir(dir_tree))
         cwd = ""
 
+        @lru_cache
+        def abspath(*args):
+            return path.abspath(path.join(*args))
+
         for line in input.split("\n"):
             match line.split(" "):
                 case ("$", *args):
                     match args:
                         case ("cd", d):
-                            cwd = str(PosixPath(cwd, d).resolve())
+                            cwd = abspath(cwd, d)
                 case ("dir", d):
-                    dir_tree[cwd].children.append(str(PosixPath(cwd, d).resolve()))
+                    dir_tree[cwd].children.append(abspath(cwd, d))
                 case (size, name):
                     dir_tree[cwd].files[name] = int(size)
                 case _:

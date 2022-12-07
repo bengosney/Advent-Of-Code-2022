@@ -14,15 +14,11 @@ class dir:
         self.dir_tree: dict[str, "dir"] = tree
 
     @lru_cache
-    def sum(self) -> int:
-        return sum([v for v in self.files])
-
-    @lru_cache
-    def total_size(self) -> int:
-        total = self.sum()
+    def __int__(self) -> int:
+        total = sum([v for v in self.files])
 
         for c in self.children:
-            total += self.dir_tree[c].total_size()
+            total += int(self.dir_tree[c])
 
         return total
 
@@ -58,7 +54,7 @@ def part_1(input: str) -> int:
 
     totals = 0
     for folder in dir_tree.values():
-        if (total := folder.total_size()) <= MAX_SIZE:
+        if (total := int(folder)) <= MAX_SIZE:
             totals += total
 
     return totals
@@ -70,11 +66,11 @@ def part_2(input: str) -> int:
 
     dir_tree = dir.parse(input)
 
-    needed_space = MIN_FREE - (MAX_SIZE - dir_tree["/"].total_size())
+    needed_space = MIN_FREE - (MAX_SIZE - int(dir_tree["/"]))
 
     totals = []
     for folder in dir_tree.values():
-        if (total := folder.total_size()) >= needed_space:
+        if (total := int(folder)) >= needed_space:
             totals.append(total)
 
     return min(totals)

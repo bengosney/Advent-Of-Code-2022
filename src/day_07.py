@@ -8,14 +8,14 @@ from utils import read_input
 
 
 class dir:
-    def __init__(self, tree) -> None:
-        self.files = {}
-        self.children = []
-        self.dir_tree = tree
+    def __init__(self, tree: dict[str, "dir"]) -> None:
+        self.files: list[int] = []
+        self.children: list[str] = []
+        self.dir_tree: dict[str, "dir"] = tree
 
     @lru_cache
     def sum(self) -> int:
-        return sum([v for v in self.files.values()])
+        return sum([v for v in self.files])
 
     @lru_cache
     def total_size(self) -> int:
@@ -28,7 +28,7 @@ class dir:
 
     @staticmethod
     def parse(input: str) -> dict[str, "dir"]:
-        dir_tree = defaultdict(lambda: dir(dir_tree))
+        dir_tree: dict[str, dir] = defaultdict(lambda: dir(dir_tree))
         cwd = ""
 
         @lru_cache
@@ -43,8 +43,8 @@ class dir:
                             cwd = abspath(cwd, d)
                 case ("dir", d):
                     dir_tree[cwd].children.append(abspath(cwd, d))
-                case (size, name):
-                    dir_tree[cwd].files[name] = int(size)
+                case (size, _):
+                    dir_tree[cwd].files.append(int(size))
                 case _:
                     raise Exception(f"Unknow line: {line}")
 

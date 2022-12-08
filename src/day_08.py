@@ -1,85 +1,68 @@
+# Standard Library
+from collections.abc import Callable, Iterable
+from math import prod
+
 # First Party
 from utils import read_input
 
 
-def part_1(input: str) -> int:
+def map_trees(input: str) -> tuple[dict[tuple[int, int], int], int, int]:
     tree_map = {}
-    positions = []
-
-    max_x = 0
-    max_y = 0
 
     for y, line in enumerate(input.split("\n")):
-        max_y = max(max_y, y)
         for x, tree in enumerate(line):
-            max_x = max(max_x, x)
             tree_map[(x, y)] = int(tree)
-            positions.append((x, y))
 
-    visible = []
-    for x, y in positions:
+    max_x = max(map(lambda p: p[0], tree_map)) + 1
+    max_y = max(map(lambda p: p[1], tree_map)) + 1
+
+    return tree_map, max_x, max_y
+
+
+def part_1(input: str) -> int:
+    tree_map, max_x, max_y = map_trees(input)
+
+    visible = max_x + max_y - 1
+    for x, y in tree_map:
         if x in [0, max_x] or y in [0, max_y]:
-            visible.append((x, y))
             continue
 
-        tree = tree_map[(x, y)]
+        visible += int(
+            any(
+                [
+                    all(tree_map[(x, y)] > tree_map[(tx, y)] for tx in range(x)),
+                    all(tree_map[(x, y)] > tree_map[(tx, y)] for tx in range(x + 1, max_x)),
+                    all(tree_map[(x, y)] > tree_map[(x, ty)] for ty in range(y)),
+                    all(tree_map[(x, y)] > tree_map[(x, ty)] for ty in range(y + 1, max_y)),
+                ]
+            )
+        )
 
-        if any(
-            [
-                all(tree > tree_map[(tx, y)] for tx in range(x)),
-                all(tree > tree_map[(tx, y)] for tx in range(x + 1, max_x + 1)),
-                all(tree > tree_map[(x, ty)] for ty in range(y)),
-                all(tree > tree_map[(x, ty)] for ty in range(y + 1, max_y + 1)),
-            ]
-        ):
-            visible.append((x, y))
+    return visible
 
-    return len(visible)
+
+def one_until(predicate: Callable, iterable: Iterable):
+    for x in iterable:
+        yield 1
+        if predicate(x):
+            break
 
 
 def part_2(input: str) -> int:
-    tree_map = {}
-    positions = []
-
-    max_x = 0
-    max_y = 0
-
-    for y, line in enumerate(input.split("\n")):
-        max_y = max(max_y, y)
-        for x, tree in enumerate(line):
-            max_x = max(max_x, x)
-            tree_map[(x, y)] = int(tree)
-            positions.append((x, y))
+    tree_map, max_x, max_y = map_trees(input)
 
     scores = []
-    for x, y in positions:
-        tree = tree_map[(x, y)]
-
-        x1 = 0
-        for tx in reversed(range(x)):
-            x1 += 1
-            if tree <= tree_map[(tx, y)]:
-                break
-
-        x2 = 0
-        for tx in range(x + 1, max_x + 1):
-            x2 += 1
-            if tree <= tree_map[(tx, y)]:
-                break
-
-        y1 = 0
-        for ty in reversed(range(y)):
-            y1 += 1
-            if tree <= tree_map[(x, ty)]:
-                break
-
-        y2 = 0
-        for ty in range(y + 1, max_y + 1):
-            y2 += 1
-            if tree <= tree_map[(x, ty)]:
-                break
-
-        scores.append(x1 * x2 * y1 * y2)
+    for x, y in tree_map:
+        scores.append(
+            prod(
+                [
+                    sum(one_until(lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)], reversed(range(x)))),
+                    sum(one_until(lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)], range(x + 1, max_x))),
+                    sum(one_until(lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)], reversed(range(y)))),
+                    sum(one_until(lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)], range(y + 1, max_y))),
+                ],
+            )
+        )
 
     return max(scores)
 

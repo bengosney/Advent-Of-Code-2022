@@ -9,16 +9,14 @@ X = 0
 Y = 1
 
 
-def follow(leader, follower):
-    while (abs(leader[X] - follower[X]) >= 2 and abs(leader[Y] - follower[Y]) >= 1) or (
-        abs(leader[X] - follower[X]) >= 1 and abs(leader[Y] - follower[Y]) >= 2
-    ):
-        follower[X] += 1 if (leader[X] - follower[X]) > 0 else -1
-        follower[Y] += 1 if (leader[Y] - follower[Y]) > 0 else -1
+def get_move(x: int) -> int:
+    return (x > 0) - (x < 0)
 
-    for direction in [X, Y]:
-        while abs(diff := leader[direction] - follower[direction]) >= 2:
-            follower[direction] += 1 if diff > 0 else -1
+
+def follow(leader, follower):
+    if abs(leader[X] - follower[X]) > 1 or abs(leader[Y] - follower[Y]) > 1:
+        follower[X] += get_move(leader[X] - follower[X])
+        follower[Y] += get_move(leader[Y] - follower[Y])
 
     return follower
 

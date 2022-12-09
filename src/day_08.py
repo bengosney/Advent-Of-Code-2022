@@ -54,30 +54,10 @@ def part_2(input: str) -> int:
     scores = [
         prod(
             [
-                sum(
-                    one_until(
-                        lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)],
-                        reversed(range(x)),
-                    )
-                ),
-                sum(
-                    one_until(
-                        lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)],
-                        range(x + 1, max_x),
-                    )
-                ),
-                sum(
-                    one_until(
-                        lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)],
-                        reversed(range(y)),
-                    )
-                ),
-                sum(
-                    one_until(
-                        lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)],
-                        range(y + 1, max_y),
-                    )
-                ),
+                sum(one_until(lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)], reversed(range(x)))),
+                sum(one_until(lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)], range(x + 1, max_x))),
+                sum(one_until(lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)], reversed(range(y)))),
+                sum(one_until(lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)], range(y + 1, max_y))),
             ],
         )
         for x, y in tree_map

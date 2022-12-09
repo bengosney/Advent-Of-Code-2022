@@ -5,31 +5,30 @@ from itertools import repeat
 # First Party
 from utils import read_input
 
-X = 0
-Y = 1
+MOVES = {"U": (0, 1), "D": (0, -1), "R": (1, 0), "L": (-1, 0)}
 
-MOVES = {"U": [0, 1], "D": [0, -1], "R": [1, 0], "L": [-1, 0]}
+Point = tuple[int, int]
 
 
-def get_move(x: int) -> int:
+def move(x: int) -> int:
     return (x > 0) - (x < 0)
 
 
-def follow(leader, follower):
-    if abs(leader[X] - follower[X]) > 1 or abs(leader[Y] - follower[Y]) > 1:
-        follower[X] += get_move(leader[X] - follower[X])
-        follower[Y] += get_move(leader[Y] - follower[Y])
+def add(a: Point, b: Point) -> Point:
+    return tuple([x + y for x, y in zip(a, b)])
+
+
+def follow(leader: Point, follower: Point) -> Point:
+    diff_x, diff_y = (x - y for x, y in zip(leader, follower))
+    if abs(diff_x) > 1 or abs(diff_y) > 1:
+        return add(follower, (move(diff_x), move(diff_y)))
 
     return follower
 
 
-def add(a: list[int], b: list[int]):
-    return [x + y for x, y in zip(a, b)]
-
-
 def part_1(input: str) -> int:
-    head = [0, 0]
-    tail = [0, 0]
+    head: Point = (0, 0)
+    tail: Point = (0, 0)
 
     visited = defaultdict(lambda: 0)
 
@@ -45,7 +44,7 @@ def part_1(input: str) -> int:
 
 
 def part_2(input: str) -> int:
-    rope = list(repeat([0, 0], 10))
+    rope: list[Point] = list(repeat((0, 0), 10))
     visited = defaultdict(lambda: 0)
 
     for line in input.split("\n"):
@@ -53,7 +52,7 @@ def part_2(input: str) -> int:
         for _ in range(int(amount)):
             rope[0] = add(rope[0], MOVES[direction])
             for i in range(1, len(rope)):
-                rope[i] = follow(rope[i - 1].copy(), rope[i].copy())
+                rope[i] = follow(rope[i - 1], rope[i])
 
             visited[tuple(rope[-1])] = 1
 

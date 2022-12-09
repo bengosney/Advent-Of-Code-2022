@@ -9,20 +9,20 @@ X = 0
 Y = 1
 
 
-def follow(lead, follow):
-    while (abs(lead[X] - follow[X]) >= 2 and abs(lead[Y] - follow[Y]) >= 1) or (
-        abs(lead[X] - follow[X]) >= 1 and abs(lead[Y] - follow[Y]) >= 2
+def follow(leader, follower):
+    while (abs(leader[X] - follower[X]) >= 2 and abs(leader[Y] - follower[Y]) >= 1) or (
+        abs(leader[X] - follower[X]) >= 1 and abs(leader[Y] - follower[Y]) >= 2
     ):
-        follow[X] += 1 if (lead[X] - follow[X]) > 0 else -1
-        follow[Y] += 1 if (lead[Y] - follow[Y]) > 0 else -1
+        follower[X] += 1 if (leader[X] - follower[X]) > 0 else -1
+        follower[Y] += 1 if (leader[Y] - follower[Y]) > 0 else -1
 
-    while abs(lead[X] - follow[X]) >= 2:
-        follow[X] += 1 if (lead[X] - follow[X]) > 0 else -1
+    while abs(leader[X] - follower[X]) >= 2:
+        follower[X] += 1 if (leader[X] - follower[X]) > 0 else -1
 
-    while abs(lead[Y] - follow[Y]) >= 2:
-        follow[Y] += 1 if (lead[Y] - follow[Y]) > 0 else -1
+    while abs(leader[Y] - follower[Y]) >= 2:
+        follower[Y] += 1 if (leader[Y] - follower[Y]) > 0 else -1
 
-    return follow
+    return follower
 
 
 def part_1(input: str) -> int:

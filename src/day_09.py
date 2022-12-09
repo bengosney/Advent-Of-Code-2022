@@ -9,19 +9,20 @@ X = 0
 Y = 1
 
 
-def draw(head: tuple[int, int], tail: tuple[int, int]):
-    height = 5
-    width = 6
-    for y in range(height):
-        for x in range(width):
-            pos = (x, (height - y) - 1)
-            p = "."
-            if pos == tail:
-                p = "T"
-            if pos == head:
-                p = "H"
-            print(p, end="")
-        print()
+def follow(lead, follow):
+    while (abs(lead[X] - follow[X]) >= 2 and abs(lead[Y] - follow[Y]) >= 1) or (
+        abs(lead[X] - follow[X]) >= 1 and abs(lead[Y] - follow[Y]) >= 2
+    ):
+        follow[X] += 1 if (lead[X] - follow[X]) > 0 else -1
+        follow[Y] += 1 if (lead[Y] - follow[Y]) > 0 else -1
+
+    while abs(lead[X] - follow[X]) >= 2:
+        follow[X] += 1 if (lead[X] - follow[X]) > 0 else -1
+
+    while abs(lead[Y] - follow[Y]) >= 2:
+        follow[Y] += 1 if (lead[Y] - follow[Y]) > 0 else -1
+
+    return follow
 
 
 def part_1(input: str) -> int:
@@ -46,18 +47,7 @@ def part_1(input: str) -> int:
             case "D":
                 head[Y] -= 1
 
-        x_diff = head[X] - tail[X]
-        y_diff = head[Y] - tail[Y]
-
-        if (abs(x_diff) + abs(y_diff)) == 3:
-            tail[X] += 1 if x_diff > 0 else -1
-            tail[Y] += 1 if y_diff > 0 else -1
-
-        while abs(head[X] - tail[X]) >= 2:
-            tail[X] += 1 if (head[X] - tail[X]) > 0 else -1
-
-        while abs(head[Y] - tail[Y]) >= 2:
-            tail[Y] += 1 if (head[Y] - tail[Y]) > 0 else -1
+        tail = follow(head, tail)
 
         visited[tuple(tail)] = 1
 
@@ -65,13 +55,37 @@ def part_1(input: str) -> int:
 
 
 def part_2(input: str) -> int:
-    pass
+    rope = list(repeat([0, 0], 10))
+    visited = defaultdict(lambda: 0)
+
+    commands = []
+    for line in input.split("\n"):
+        direction, amount = line.split()
+        commands.extend(repeat(direction, int(amount)))
+
+    for cmd in commands:
+        match cmd:
+            case "R":
+                rope[0][X] += 1
+            case "L":
+                rope[0][X] -= 1
+            case "U":
+                rope[0][Y] += 1
+            case "D":
+                rope[0][Y] -= 1
+
+        for i in range(1, len(rope)):
+            rope[i] = follow(rope[i - 1].copy(), rope[i].copy())
+
+        visited[tuple(rope[-1])] = 1
+
+    return sum(visited.values())
 
 
 # -- Tests
 
 
-def get_example_input() -> str:
+def get_example_input_1() -> str:
     return """R 4
 U 4
 L 3
@@ -83,23 +97,34 @@ R 2"""
 
 
 def test_part_1():
-    test_input = get_example_input()
+    test_input = get_example_input_1()
     assert part_1(test_input) == 13
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def get_example_input_2() -> str:
+    return """R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20"""
 
 
-# def test_part_1_real():
-#     real_input = read_input(__file__)
-#     assert part_1(real_input) is not None
+def test_part_2():
+    test_input = get_example_input_2()
+    assert part_2(test_input) == 36
 
 
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+def test_part_1_real():
+    real_input = read_input(__file__)
+    assert part_1(real_input) == 6087
+
+
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input) == 2493
 
 
 # -- Main

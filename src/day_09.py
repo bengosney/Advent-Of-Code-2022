@@ -1,6 +1,7 @@
 # Standard Library
 from collections import defaultdict
 from itertools import repeat
+from typing import cast
 
 # First Party
 from utils import read_input
@@ -15,7 +16,7 @@ def move(x: int) -> int:
 
 
 def add(a: Point, b: Point) -> Point:
-    return tuple([x + y for x, y in zip(a, b)])
+    return cast(Point, tuple([x + y for x, y in list(zip(a, b))]))
 
 
 def follow(leader: Point, follower: Point) -> Point:
@@ -37,7 +38,7 @@ def simulate(input: str, length) -> int:
             for i in range(1, len(rope)):
                 rope[i] = follow(rope[i - 1], rope[i])
 
-            visited[tuple(rope[-1])] = 1
+            visited[rope[-1]] = 1
 
     return sum(visited.values())
 

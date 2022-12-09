@@ -27,7 +27,7 @@ def follow(leader: Point, follower: Point) -> Point:
     return follower
 
 
-def simulate(input: str, length) -> int:
+def simulate(input: str, length: int) -> int:
     rope: list[Point] = list(repeat((0, 0), length))
     visited = defaultdict(lambda: 0)
 

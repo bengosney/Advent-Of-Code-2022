@@ -15,7 +15,7 @@ class dir:
 
     @lru_cache
     def __int__(self) -> int:
-        total = sum([v for v in self.files])
+        total = sum(list(self.files))
 
         for c in self.children:
             total += int(self.dir_tree[c])

@@ -16,7 +16,7 @@ def move(x: int) -> int:
 
 
 def add(a: Point, b: Point) -> Point:
-    return cast(Point, tuple([x + y for x, y in list(zip(a, b))]))
+    return cast(Point, tuple(x + y for x, y in list(zip(a, b))))
 
 
 def follow(leader: Point, follower: Point) -> Point:

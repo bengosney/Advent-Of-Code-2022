@@ -16,11 +16,9 @@ def follow(leader, follower):
         follower[X] += 1 if (leader[X] - follower[X]) > 0 else -1
         follower[Y] += 1 if (leader[Y] - follower[Y]) > 0 else -1
 
-    while abs(leader[X] - follower[X]) >= 2:
-        follower[X] += 1 if (leader[X] - follower[X]) > 0 else -1
-
-    while abs(leader[Y] - follower[Y]) >= 2:
-        follower[Y] += 1 if (leader[Y] - follower[Y]) > 0 else -1
+    for direction in [X, Y]:
+        while abs(diff := leader[direction] - follower[direction]) >= 2:
+            follower[direction] += 1 if diff > 0 else -1
 
     return follower
 

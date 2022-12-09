@@ -26,25 +26,8 @@ def follow(leader: Point, follower: Point) -> Point:
     return follower
 
 
-def part_1(input: str) -> int:
-    head: Point = (0, 0)
-    tail: Point = (0, 0)
-
-    visited = defaultdict(lambda: 0)
-
-    for line in input.split("\n"):
-        direction, amount = line.split(" ")
-        for _ in range(int(amount)):
-            head = add(head, MOVES[direction])
-            tail = follow(head, tail)
-
-            visited[tuple(tail)] = 1
-
-    return sum(visited.values())
-
-
-def part_2(input: str) -> int:
-    rope: list[Point] = list(repeat((0, 0), 10))
+def simulate(input: str, length) -> int:
+    rope: list[Point] = list(repeat((0, 0), length))
     visited = defaultdict(lambda: 0)
 
     for line in input.split("\n"):
@@ -57,6 +40,14 @@ def part_2(input: str) -> int:
             visited[tuple(rope[-1])] = 1
 
     return sum(visited.values())
+
+
+def part_1(input: str) -> int:
+    return simulate(input, 2)
+
+
+def part_2(input: str) -> int:
+    return simulate(input, 10)
 
 
 # -- Tests

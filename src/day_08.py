@@ -51,19 +51,37 @@ def one_until(predicate: Callable, iterable: Iterable):
 def part_2(input: str) -> int:
     tree_map, max_x, max_y = map_trees(input)
 
-    scores = []
-    for x, y in tree_map:
-        scores.append(
-            prod(
-                [
-                    sum(one_until(lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)], reversed(range(x)))),
-                    sum(one_until(lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)], range(x + 1, max_x))),
-                    sum(one_until(lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)], reversed(range(y)))),
-                    sum(one_until(lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)], range(y + 1, max_y))),
-                ],
-            )
+    scores = [
+        prod(
+            [
+                sum(
+                    one_until(
+                        lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)],
+                        reversed(range(x)),
+                    )
+                ),
+                sum(
+                    one_until(
+                        lambda tx: tree_map[(x, y)] <= tree_map[(tx, y)],
+                        range(x + 1, max_x),
+                    )
+                ),
+                sum(
+                    one_until(
+                        lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)],
+                        reversed(range(y)),
+                    )
+                ),
+                sum(
+                    one_until(
+                        lambda ty: tree_map[(x, y)] <= tree_map[(x, ty)],
+                        range(y + 1, max_y),
+                    )
+                ),
+            ],
         )
-
+        for x, y in tree_map
+    ]
     return max(scores)
 
 

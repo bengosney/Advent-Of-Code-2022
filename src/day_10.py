@@ -2,35 +2,22 @@
 from utils import read_input
 
 
-def processory(input: str):
+def processor(input: str):
     register = 1
     cycle = 0
 
     for line in input.split("\n"):
         cycle += 1
+        yield cycle, register
         match line.split(" "):
             case "noop", *_:
                 pass
             case "addx", value:
-                yield cycle, register
                 cycle += 1
+                yield cycle, register
                 register += int(value)
             case _:
                 raise Exception(f"Invalid command: {line}")
-        yield cycle, register
-
-
-def processor(input):
-    cycle = 0
-    register = 1
-    prev = ""
-    for line in input.split("\n"):
-        for op in line.split():
-            cycle += 1
-            yield cycle, register
-            if prev == "addx":
-                register += int(op)
-            prev = op
 
 
 def part_1(input: str) -> int:
@@ -47,14 +34,18 @@ def part_1(input: str) -> int:
     raise Exception("Not enough input")
 
 
+SCREEN_WIDTH = 40
+
+
 def part_2(input: str) -> str:
     display: list[str] = []
 
     for i, s in processor(input):
-        display.append("#" if i % 40 in [s, s + 1, s + 2] else ".")
+        display.append("#" if i % SCREEN_WIDTH in [s, s + 1, s + 2] else " ")
 
     screen = "\n".join(
         [
+            "",
             "".join(display[0:40]),
             "".join(display[40:80]),
             "".join(display[80:120]),
@@ -63,7 +54,7 @@ def part_2(input: str) -> str:
             "".join(display[200:240]),
         ]
     )
-    print(screen)
+
     return screen
 
 
@@ -226,13 +217,15 @@ def test_part_1():
 
 def test_part_2():
     test_input = get_example_input()
+
     assert (
-        part_2(test_input)
-        == """##..##..##..##..##..##..##..##..##..##..
+        part_2(test_input).replace(" ", ".")
+        == """
+##..##..##..##..##..##..##..##..##..##..
 ###...###...###...###...###...###...###.
 ####....####....####....####....####....
 #####.....#####.....#####.....#####.....
-######......######......######......####
+######......######......######......###.
 #######.......#######.......#######....."""
     )
 
@@ -242,9 +235,19 @@ def test_part_1_real():
     assert part_1(real_input) == 13440
 
 
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+def test_part_2_real():
+    real_input = read_input(__file__)
+
+    assert (
+        part_2(real_input)
+        == """
+###  ###  ####  ##  ###   ##  ####  ##
+#  # #  #    # #  # #  # #  #    # #  #
+#  # ###    #  #    #  # #  #   #  #  #
+###  #  #  #   # ## ###  ####  #   ####
+#    #  # #    #  # # #  #  # #    #  #
+#    ###  ####  ### #  # #  # #### #  # """
+    )
 
 
 # -- Main

@@ -2,7 +2,7 @@
 from utils import read_input
 
 
-def processor(input: str):
+def processory(input: str):
     register = 1
     cycle = 0
 
@@ -20,25 +20,51 @@ def processor(input: str):
         yield cycle, register
 
 
+def processor(input):
+    cycle = 0
+    register = 1
+    prev = ""
+    for line in input.split("\n"):
+        for op in line.split():
+            cycle += 1
+            yield cycle, register
+            if prev == "addx":
+                register += int(op)
+            prev = op
+
+
 def part_1(input: str) -> int:
     strength = 0
     cycle = 20
-    prev = 0
     for i, signal_strength in processor(input):
         if i == cycle:
-            strength += prev * i
+            strength += signal_strength * i
             cycle += 40
 
         if i == 220:
             return strength
 
-        prev = signal_strength
-
     raise Exception("Not enough input")
 
 
-def part_2(input: str) -> int:
-    pass
+def part_2(input: str) -> str:
+    display: list[str] = []
+
+    for i, s in processor(input):
+        display.append("#" if i % 40 in [s, s + 1, s + 2] else ".")
+
+    screen = "\n".join(
+        [
+            "".join(display[0:40]),
+            "".join(display[40:80]),
+            "".join(display[80:120]),
+            "".join(display[120:160]),
+            "".join(display[160:200]),
+            "".join(display[200:240]),
+        ]
+    )
+    print(screen)
+    return screen
 
 
 # -- Tests
@@ -198,26 +224,22 @@ def test_part_1():
     assert part_1(test_input) == 13140
 
 
-def test_steps_part_1():
-    test_input = """noop
-addx 3
-addx -5"""
-
-    reg = [0, 1, 1, 4, 4, -1]
-
-    for i, signal_strength in processor(test_input):
-        assert signal_strength == reg[i]
-
-
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert (
+        part_2(test_input)
+        == """##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######....."""
+    )
 
 
-# def test_part_1_real():
-# not 14560
-#     real_input = read_input(__file__)
-#     assert part_1(real_input) is not None
+def test_part_1_real():
+    real_input = read_input(__file__)
+    assert part_1(real_input) == 13440
 
 
 # def test_part_2_real():

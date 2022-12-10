@@ -1,5 +1,10 @@
+# Standard Library
+from collections import defaultdict
+
 # First Party
 from utils import read_input
+
+SCREEN_WIDTH = 40
 
 
 def processor(input: str):
@@ -22,11 +27,11 @@ def processor(input: str):
 
 def part_1(input: str) -> int:
     strength = 0
-    cycle = 20
+    check_cycle = 20
     for i, signal_strength in processor(input):
-        if i == cycle:
+        if i == check_cycle:
             strength += signal_strength * i
-            cycle += 40
+            check_cycle += 40
 
         if i == 220:
             return strength
@@ -34,28 +39,15 @@ def part_1(input: str) -> int:
     raise Exception("Not enough input")
 
 
-SCREEN_WIDTH = 40
+def part_2(input: str, lit: str = "#", unlit: str = " ") -> str:
+    display: dict[int, str] = defaultdict(lambda: "")
 
+    for cycle, signal in processor(input):
+        sprite = list(range(signal, signal + 3))
+        state = lit if cycle % SCREEN_WIDTH in sprite else unlit
+        display[(cycle - 1) // SCREEN_WIDTH] += state
 
-def part_2(input: str) -> str:
-    display: list[str] = []
-
-    for i, s in processor(input):
-        display.append("#" if i % SCREEN_WIDTH in [s, s + 1, s + 2] else " ")
-
-    screen = "\n".join(
-        [
-            "",
-            "".join(display[0:40]),
-            "".join(display[40:80]),
-            "".join(display[80:120]),
-            "".join(display[120:160]),
-            "".join(display[160:200]),
-            "".join(display[200:240]),
-        ]
-    )
-
-    return screen
+    return "\n" + "\n".join(display.values())
 
 
 # -- Tests
@@ -219,7 +211,7 @@ def test_part_2():
     test_input = get_example_input()
 
     assert (
-        part_2(test_input).replace(" ", ".")
+        part_2(test_input, unlit=".")
         == """
 ##..##..##..##..##..##..##..##..##..##..
 ###...###...###...###...###...###...###.
@@ -239,14 +231,14 @@ def test_part_2_real():
     real_input = read_input(__file__)
 
     assert (
-        part_2(real_input)
+        part_2(real_input, unlit=".")
         == """
-###  ###  ####  ##  ###   ##  ####  ##
-#  # #  #    # #  # #  # #  #    # #  #
-#  # ###    #  #    #  # #  #   #  #  #
-###  #  #  #   # ## ###  ####  #   ####
-#    #  # #    #  # # #  #  # #    #  #
-#    ###  ####  ### #  # #  # #### #  # """
+###..###..####..##..###...##..####..##..
+#..#.#..#....#.#..#.#..#.#..#....#.#..#.
+#..#.###....#..#....#..#.#..#...#..#..#.
+###..#..#..#...#.##.###..####..#...####.
+#....#..#.#....#..#.#.#..#..#.#....#..#.
+#....###..####..###.#..#.#..#.####.#..#."""
     )
 
 

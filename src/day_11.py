@@ -10,25 +10,22 @@ from typing import Self
 from utils import read_input
 
 
-def int_or_zero(s: str) -> int:
-    return int(s) if s.isnumeric() else 0
-
-
 class Monkey:
     def __init__(self, monkey_list: dict[int, Self]) -> None:
         self.monkey_list = monkey_list
         self.items: list[int] = []
+
         self.op: Callable[[int], int]
-        self.test: int = 0
-        self.true: int = 0
-        self.false: int = 0
+        self.test: int
+        self.true: int
+        self.false: int
 
         self.inspected: int = 0
 
-    def add(self, item: int):
+    def add(self, item: int) -> None:
         self.items.append(item)
 
-    def process_items(self, worry_reducer: Callable[[int], int]):
+    def process_items(self, worry_reducer: Callable[[int], int]) -> None:
         while len(self.items):
             self.inspected += 1
             item = worry_reducer(self.op(self.items.pop(0)))
@@ -54,7 +51,7 @@ class Monkey:
 
         for monk in input.split("\n\n"):
             definition = list(map(lambda s: s.strip(), monk.split("\n")))
-            _, monk_num = map(int_or_zero, map(lambda s: s.strip(":"), definition.pop(0).split()))
+            monk_num = int(definition.pop(0).split()[-1].strip(":"))
 
             for line in definition:
                 match line.split(":"):
@@ -74,25 +71,21 @@ class Monkey:
         return dict(monkeys)
 
 
-def round(monkeys: dict[int, Monkey], worry_reducer: Callable[[int], int]):
-    for monkey in monkeys.values():
-        monkey.process_items(worry_reducer)
-
-
 def get_monkey_business(monkeys: dict[int, Monkey]) -> int:
     business: list[int] = []
     for monkey in monkeys.values():
         business.append(monkey.inspected)
 
-    business.sort()
+    business.sort(reverse=True)
 
-    return business.pop() * business.pop()
+    return business[0] * business[1]
 
 
 def part_1(input: str) -> int:
     monkeys = Monkey.parse(input)
     for _ in range(20):
-        round(monkeys, lambda x: x // 3)
+        for monkey in monkeys.values():
+            monkey.process_items(lambda x: x // 3)
 
     return get_monkey_business(monkeys)
 
@@ -101,8 +94,9 @@ def part_2(input: str) -> int:
     monkeys = Monkey.parse(input)
     base = lcm(*[monkey.test for monkey in monkeys.values()])
 
-    for i in range(10000):
-        round(monkeys, lambda x: x % base)
+    for _ in range(10000):
+        for monkey in monkeys.values():
+            monkey.process_items(lambda x: x % base)
 
     return get_monkey_business(monkeys)
 

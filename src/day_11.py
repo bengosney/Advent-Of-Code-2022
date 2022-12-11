@@ -1,5 +1,7 @@
 # Standard Library
 from collections import defaultdict
+from collections.abc import Callable
+from math import lcm
 from typing import Self
 
 # First Party
@@ -21,32 +23,17 @@ class Monkey:
 
         self.inspected: int = 0
 
-    def __str__(self) -> str:
-        return "\n====\n" + "\n".join(
-            [
-                f"items: {self.items}",
-                f"op: {self.op}",
-                f"test: {self.test}",
-                f"  True: {self.true}",
-                f"  False: {self.false}",
-            ]
-        )
-
-    def __repr__(self) -> str:
-        return f"{self}"
-
     def add(self, item: int):
         self.items.append(item)
 
-    def process_items(self, worry_divisor: int):
+    def process_items(self, worry_reducer: Callable[[int], int]):
         def op(old: int) -> int:
             return int(eval(self.op))
 
         while len(self.items):
             self.inspected += 1
             item = op(self.items.pop(0))
-            if worry_divisor > 1:
-                item = item // worry_divisor
+            item = worry_reducer(item)
             if item % self.test == 0:
                 self.monkey_list[self.true].add(item)
             else:
@@ -79,39 +66,37 @@ class Monkey:
         return dict(monkeys)
 
 
-def round(monkeys: dict[int, Monkey], worry_divisor: int):
+def round(monkeys: dict[int, Monkey], worry_reducer: Callable[[int], int]):
     for monkey in monkeys.values():
-        monkey.process_items(worry_divisor)
+        monkey.process_items(worry_reducer)
+
+
+def get_monkey_business(monkeys: dict[int, Monkey]) -> int:
+    business: list[int] = []
+    for monkey in monkeys.values():
+        business.append(monkey.inspected)
+
+    business.sort()
+
+    return business.pop() * business.pop()
 
 
 def part_1(input: str) -> int:
     monkeys = Monkey.parse(input)
     for _ in range(20):
-        round(monkeys, 3)
+        round(monkeys, lambda x: x // 3)
 
-    business: list[int] = []
-    for monkey in monkeys.values():
-        business.append(monkey.inspected)
-
-    business.sort()
-
-    return business.pop() * business.pop()
+    return get_monkey_business(monkeys)
 
 
 def part_2(input: str) -> int:
     monkeys = Monkey.parse(input)
-    for i in range(1000):
-        if (i % 100) == 0:
-            print(i)
-        round(monkeys, 1)
+    base = lcm(*[monkey.test for monkey in monkeys.values()])
 
-    business: list[int] = []
-    for monkey in monkeys.values():
-        business.append(monkey.inspected)
+    for i in range(10000):
+        round(monkeys, lambda x: x % base)
 
-    business.sort()
-
-    return business.pop() * business.pop()
+    return get_monkey_business(monkeys)
 
 
 # -- Tests
@@ -162,9 +147,9 @@ def test_part_1_real():
     assert part_1(real_input) == 67830
 
 
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input) == 15305381442
 
 
 # -- Main

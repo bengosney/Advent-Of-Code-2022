@@ -59,10 +59,7 @@ class Monkey:
 
 
 def get_monkey_business(monkeys: dict[int, Monkey]) -> int:
-    business: list[int] = []
-    for monkey in monkeys.values():
-        business.append(monkey.inspected)
-
+    business: list[int] = [monkey.inspected for monkey in monkeys.values()]
     business.sort(reverse=True)
 
     return business[0] * business[1]

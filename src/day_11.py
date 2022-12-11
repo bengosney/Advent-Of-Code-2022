@@ -38,18 +38,19 @@ class Monkey:
     def add(self, item: int):
         self.items.append(item)
 
-    def process_items(self):
+    def process_items(self, worry_divisor: int):
         def op(old: int) -> int:
             return int(eval(self.op))
 
         while len(self.items):
             self.inspected += 1
-            item = self.items.pop(0)
-            new_item = op(item) // 3
-            if new_item % self.test == 0:
-                self.monkey_list[self.true].add(new_item)
+            item = op(self.items.pop(0))
+            if worry_divisor > 1:
+                item = item // worry_divisor
+            if item % self.test == 0:
+                self.monkey_list[self.true].add(item)
             else:
-                self.monkey_list[self.false].add(new_item)
+                self.monkey_list[self.false].add(item)
 
     @classmethod
     def parse(cls: type[Self], input: str) -> dict[int, Self]:
@@ -78,15 +79,15 @@ class Monkey:
         return dict(monkeys)
 
 
-def round(monkeys: dict[int, Monkey]):
+def round(monkeys: dict[int, Monkey], worry_divisor: int):
     for monkey in monkeys.values():
-        monkey.process_items()
+        monkey.process_items(worry_divisor)
 
 
 def part_1(input: str) -> int:
     monkeys = Monkey.parse(input)
     for _ in range(20):
-        round(monkeys)
+        round(monkeys, 3)
 
     business: list[int] = []
     for monkey in monkeys.values():
@@ -98,7 +99,19 @@ def part_1(input: str) -> int:
 
 
 def part_2(input: str) -> int:
-    pass
+    monkeys = Monkey.parse(input)
+    for i in range(1000):
+        if (i % 100) == 0:
+            print(i)
+        round(monkeys, 1)
+
+    business: list[int] = []
+    for monkey in monkeys.values():
+        business.append(monkey.inspected)
+
+    business.sort()
+
+    return business.pop() * business.pop()
 
 
 # -- Tests
@@ -139,9 +152,9 @@ def test_part_1():
     assert part_1(test_input) == 10605
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input) == 2713310158
 
 
 def test_part_1_real():

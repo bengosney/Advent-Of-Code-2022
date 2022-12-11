@@ -1,8 +1,6 @@
 # Standard Library
-import operator
 from collections import defaultdict
 from collections.abc import Callable
-from functools import partial
 from math import lcm
 from typing import Self
 
@@ -36,17 +34,6 @@ class Monkey:
 
     @classmethod
     def parse(cls: type[Self], input: str) -> dict[int, Self]:
-        def get_op(op_str: str) -> Callable[[int], int]:
-            match op_str.split(" = ")[-1].split()[1:]:
-                case "*", "old":
-                    return lambda x: x * x
-                case "*", val:
-                    return partial(operator.mul, int(val))
-                case "+", val:
-                    return partial(operator.add, int(val))
-                case _:
-                    raise Exception(f"Unknown op: {op_str}")
-
         monkeys: dict[int, Monkey] = defaultdict(lambda: cls(monkeys))
 
         for monk in input.split("\n\n"):
@@ -58,7 +45,7 @@ class Monkey:
                     case "Starting items", item_string:
                         monkeys[monk_num].items = list(map(int, item_string.split(",")))
                     case "Operation", op:
-                        monkeys[monk_num].op = get_op(op.strip())
+                        monkeys[monk_num].op = eval(f"lambda old: {op.split(' = ')[-1]}")
                     case attr, value:
                         setattr(
                             monkeys[monk_num],

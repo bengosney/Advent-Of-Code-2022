@@ -1,6 +1,8 @@
 # Standard Library
+import operator
 from collections import defaultdict
 from collections.abc import Callable
+from functools import partial
 from math import lcm
 from typing import Self
 
@@ -16,7 +18,7 @@ class Monkey:
     def __init__(self, monkey_list: dict[int, Self]) -> None:
         self.monkey_list = monkey_list
         self.items: list[int] = []
-        self.op: str = ""
+        self.op: Callable[[int], int]
         self.test: int = 0
         self.true: int = 0
         self.false: int = 0
@@ -27,13 +29,9 @@ class Monkey:
         self.items.append(item)
 
     def process_items(self, worry_reducer: Callable[[int], int]):
-        def op(old: int) -> int:
-            return int(eval(self.op))
-
         while len(self.items):
             self.inspected += 1
-            item = op(self.items.pop(0))
-            item = worry_reducer(item)
+            item = worry_reducer(self.op(self.items.pop(0)))
             if item % self.test == 0:
                 self.monkey_list[self.true].add(item)
             else:
@@ -41,6 +39,17 @@ class Monkey:
 
     @classmethod
     def parse(cls: type[Self], input: str) -> dict[int, Self]:
+        def get_op(op_str: str) -> Callable[[int], int]:
+            match op_str.split(" = ")[-1].split()[1:]:
+                case "*", "old":
+                    return lambda x: x * x
+                case "*", val:
+                    return partial(operator.mul, int(val))
+                case "+", val:
+                    return partial(operator.add, int(val))
+                case _:
+                    raise Exception(f"Unknown op: {op_str}")
+
         monkeys: dict[int, Monkey] = defaultdict(lambda: cls(monkeys))
 
         for monk in input.split("\n\n"):
@@ -52,14 +61,13 @@ class Monkey:
                     case "Starting items", item_string:
                         monkeys[monk_num].items = list(map(int, item_string.split(",")))
                     case "Operation", op:
-                        _, op = op.strip().split(" = ")
-                        monkeys[monk_num].op = op
-                    case "Test", test:
-                        monkeys[monk_num].test = sum(map(int_or_zero, test.split()))
-                    case "If true", true:
-                        monkeys[monk_num].true = sum(map(int_or_zero, true.split()))
-                    case "If false", false:
-                        monkeys[monk_num].false = sum(map(int_or_zero, false.split()))
+                        monkeys[monk_num].op = get_op(op.strip())
+                    case attr, value:
+                        setattr(
+                            monkeys[monk_num],
+                            attr.lower().split()[-1],
+                            int(value.split()[-1]),
+                        )
                     case _:
                         raise Exception(f"Unmatched definition line: {line.split(':')}")
 

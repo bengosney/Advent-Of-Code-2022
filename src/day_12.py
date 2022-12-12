@@ -233,19 +233,19 @@ def test_part_1():
     assert part_1(test_input) == 31
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input) == 29
 
 
 def test_part_1_real():
     real_input = read_input(__file__)
-    assert part_1(real_input) is not None
+    assert part_1(real_input) == 468
 
 
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input) == 459
 
 
 # -- Main

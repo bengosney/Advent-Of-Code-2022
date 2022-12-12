@@ -1,6 +1,21 @@
 # Standard Library
 import os
 from collections.abc import Iterable
+from functools import wraps
+
+# Third Party
+import pytest
+
+
+def no_input_skip(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except FileNotFoundError:
+            pytest.skip("Input file not found")
+
+    return wrapper
 
 
 def read_input(day: str) -> str:

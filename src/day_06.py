@@ -1,5 +1,5 @@
 # First Party
-from utils import read_input
+from utils import no_input_skip, read_input
 
 
 def find_uniq_position(input: str, length: int) -> int:
@@ -35,11 +35,13 @@ def test_part_2():
     assert part_2(test_input) == 19
 
 
+@no_input_skip
 def test_part_1_real():
     real_input = read_input(__file__)
     assert part_1(real_input) == 1953
 
 
+@no_input_skip
 def test_part_2_real():
     real_input = read_input(__file__)
     assert part_2(real_input) == 2301

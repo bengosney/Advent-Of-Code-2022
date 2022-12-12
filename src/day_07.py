@@ -4,7 +4,7 @@ from functools import lru_cache
 from os import path
 
 # First Party
-from utils import read_input
+from utils import no_input_skip, read_input
 
 
 class dir:
@@ -115,11 +115,13 @@ def test_part_2():
     assert part_2(test_input) == 24933642
 
 
+@no_input_skip
 def test_part_1_real():
     real_input = read_input(__file__)
     assert part_1(real_input) == 1334506
 
 
+@no_input_skip
 def test_part_2_real():
     real_input = read_input(__file__)
     assert part_2(real_input) == 7421137

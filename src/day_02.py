@@ -1,7 +1,7 @@
 # Standard Library
 
 # First Party
-from utils import read_input
+from utils import no_input_skip, read_input
 
 ROCK = 1
 PAPAER = 2
@@ -83,11 +83,13 @@ def test_part_2():
     assert part_2(test_input) == 12
 
 
+@no_input_skip
 def test_part_1_real():
     real_input = read_input(__file__)
     assert part_1(real_input) == 13526
 
 
+@no_input_skip
 def test_part_2_real():
     real_input = read_input(__file__)
     assert part_2(real_input) == 14204

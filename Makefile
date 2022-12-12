@@ -12,9 +12,13 @@ PIP_SYNC_PATH:=.direnv/python-$(PYTHON_VERSION)/bin/pip-sync
 PRE_COMMIT_PATH:=.direnv/python-$(PYTHON_VERSION)/bin/pre-commit
 
 ALLDAYS=$(wildcard src/day_*.py)
+ALLINPUTS=$(subst src/,inputs/,$(subst .py,.txt,$(ALLDAYS)))
 CURRENT_PY=src/day_$(shell date +%d).py
 CURRENT_INPUT=inputs/day_$(shell date +%d).txt
 COOKIEFILE=cookies.txt
+
+inputs: $(ALLINPUTS)
+	@echo $^
 
 help: ## Display this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

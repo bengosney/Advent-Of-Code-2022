@@ -91,7 +91,7 @@ def part_1(input: str) -> int:
         for move in MOVES:
             new = pos + move
             with contextlib.suppress(KeyError):
-                if abs(grid[new] - grid[pos]) <= 1:
+                if (grid[pos] + 1) >= grid[new]:
                     connected.append(new)
 
         # if len(connected) == 1:
@@ -122,7 +122,7 @@ def part_1(input: str) -> int:
         raise Exception(f"no path found: {len(visited)}")
 
     try:
-        path = pathfind(end, start)
+        path = pathfind(start, end)
     except Exception as e:
         draw(grid, vals, {k: "\033[92m" for k in visited})
         print("".join([chr(i) for i in range(ord("a"), ord("z") + 1)]))

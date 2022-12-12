@@ -1,13 +1,10 @@
 # Standard Library
-import contextlib
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Self
 
 # First Party
 from utils import read_input
-
-# Third Party
-from icecream import ic
 
 
 @dataclass(frozen=True)
@@ -18,12 +15,6 @@ class Vec:
     def __add__(self, delta: Self) -> Self:
         return Vec(self.x + delta.x, self.y + delta.y)
 
-    def __str__(self) -> str:
-        return f"({self.x},{self.y})"
-
-    def __repr__(self) -> str:
-        return str(self)
-
 
 @dataclass(frozen=True)
 class Node:
@@ -31,190 +22,73 @@ class Node:
     connected: list[Vec]
 
 
-UP = Vec(0, -1)
-DOWN = Vec(0, 1)
-LEFT = Vec(-1, 0)
-RIGHT = Vec(1, 0)
-
-MOVES = [UP, DOWN, LEFT, RIGHT]
+def moves(curr: Vec) -> Iterable[Vec]:
+    for move in [Vec(0, -1), Vec(0, 1), Vec(-1, 0), Vec(1, 0)]:
+        yield move + curr
 
 
-def draw(grid: dict[Vec, int], data: dict[Vec, str] = {}, colour: dict[Vec, str] = {}):
-    width = 0
-    height = 0
-    for v in grid:
-        width = max(width, v.x)
-        height = max(height, v.y)
+def build_grid(input: str) -> tuple[Vec, Vec, dict[Vec, int]]:
+    grid: dict[Vec, int] = {}
+    start: Vec = Vec(-1, -1)
+    end: Vec = Vec(-1, -1)
 
-    width += 1
-    height += 1
-    print("=" * width)
-    for y in range(height):
-        row = ""
-        for x in range(width):
-            row += colour.get(Vec(x, y), "") + data.get(Vec(x, y), ".") + "\033[0m"
-        print(row)
-    print("=" * width)
+    for y, line in enumerate(input.split("\n")):
+        for x, col in enumerate(line):
+            match col:
+                case "S":
+                    start = Vec(x, y)
+                    grid[Vec(x, y)] = ord("a")
+                case "E":
+                    end = Vec(x, y)
+                    grid[Vec(x, y)] = ord("z")
+                case height:
+                    grid[Vec(x, y)] = ord(height)
+
+    return start, end, grid
 
 
-def get_moves(grid, curr):
-    for move in MOVES:
-        new = move + curr
-        with contextlib.suppress(KeyError):
-            if abs(grid[new] - grid[curr]) <= 1:
-                yield new
+def path_find(nodes: dict[Vec, Node], start_point: Vec, end_condition: Callable[[Vec], bool]):
+    paths = [[start_point]]
+    visited: list[Vec] = []
+    while len(paths):
+        path = paths.pop(0)
+        for curr in nodes[path[-1]].connected:
+            if end_condition(curr):
+                return path
+
+            if curr not in path and curr not in visited:
+                new_path = list(path)
+                new_path.append(curr)
+                paths.append(new_path)
+                visited.append(curr)
+
+    raise Exception(f"no path found: {len(visited)}")
 
 
 def part_1(input: str) -> int:
-    grid: dict[Vec, int] = {}
-    start: Vec = Vec(-1, -1)
-    end: Vec = Vec(-1, -1)
-
-    vals = {}
-
-    for y, line in enumerate(input.split("\n")):
-        for x, col in enumerate(line):
-            vals[Vec(x, y)] = col
-            match col:
-                case "S":
-                    start = Vec(x, y)
-                    grid[Vec(x, y)] = ord("a")
-                case "E":
-                    end = Vec(x, y)
-                    grid[Vec(x, y)] = ord("z")
-                case height:
-                    grid[Vec(x, y)] = ord(height)
+    start, end, grid = build_grid(input)
 
     nodes: dict[Vec, Node] = {}
     for pos in grid:
-        connected = []
-        for move in MOVES:
-            new = pos + move
-            with contextlib.suppress(KeyError):
-                if (grid[pos] + 1) >= grid[new]:
-                    connected.append(new)
-
-        # if len(connected) == 1:
-        #    ic(p)
+        connected = [new for new in moves(pos) if new in grid and (grid[pos] + 1) >= grid[new]]
         nodes[pos] = Node(pos=pos, connected=connected)
 
-    ic(start)
-    ic(end)
+    path = path_find(nodes, start, lambda c: c == end)
 
-    visited: list[Vec] = []
-
-    def pathfind(start_point: Vec, end_point: Vec):
-        paths = [[start_point]]
-        while len(paths):
-            path = paths.pop(0)
-            for curr in nodes[path[-1]].connected:
-                if curr not in path and curr not in visited:
-                    newpath = list(path)
-                    newpath.append(curr)
-                    if curr == end_point:
-                        return newpath
-
-                    paths.append(newpath)
-                    visited.append(curr)
-
-                get_moves(grid, curr)
-                # ic(f"dead end: {vals[curr]} {','.join([vals[c] for c in adj])}")
-        raise Exception(f"no path found: {len(visited)}")
-
-    try:
-        path = pathfind(start, end)
-    except Exception as e:
-        draw(grid, vals, {k: "\033[92m" for k in visited})
-        print("".join([chr(i) for i in range(ord("a"), ord("z") + 1)]))
-        raise e
-
-    ic(path)
-    g = {}
-    for thing in path:
-        g[thing] = vals[thing]
-    draw(grid, vals)
-    draw(grid, g)
-
-    return len(path) - 1
+    return len(path)
 
 
 def part_2(input: str) -> int:
-    grid: dict[Vec, int] = {}
-    start: Vec = Vec(-1, -1)
-    end: Vec = Vec(-1, -1)
-
-    vals = {}
-
-    for y, line in enumerate(input.split("\n")):
-        for x, col in enumerate(line):
-            vals[Vec(x, y)] = col
-            match col:
-                case "S":
-                    start = Vec(x, y)
-                    grid[Vec(x, y)] = ord("a")
-                case "E":
-                    end = Vec(x, y)
-                    grid[Vec(x, y)] = ord("z")
-                case height:
-                    grid[Vec(x, y)] = ord(height)
+    _, end, grid = build_grid(input)
 
     nodes: dict[Vec, Node] = {}
     for pos in grid:
-        connected = []
-        for move in MOVES:
-            new = pos + move
-            with contextlib.suppress(KeyError):
-                if grid[pos] == grid[new]:
-                    connected.append(new)
-
-                if (grid[pos] - 1) == grid[new]:
-                    connected.append(new)
-
-                if grid[pos] < grid[new]:
-                    connected.append(new)
-
-        # if len(connected) == 1:
-        #    ic(p)
+        connected = [new for new in moves(pos) if new in grid and (grid[pos] - 1) <= grid[new]]
         nodes[pos] = Node(pos=pos, connected=connected)
 
-    ic(start)
-    ic(end)
+    path = path_find(nodes, end, lambda c: grid[c] == ord("a"))
 
-    visited: list[Vec] = []
-
-    def pathfind(start_point: Vec):
-        paths = [[start_point]]
-        while len(paths):
-            path = paths.pop(0)
-            for curr in nodes[path[-1]].connected:
-                if curr not in path and curr not in visited:
-                    newpath = list(path)
-                    newpath.append(curr)
-                    if grid[curr] == ord("a"):
-                        return newpath
-
-                    paths.append(newpath)
-                    visited.append(curr)
-
-                get_moves(grid, curr)
-                # ic(f"dead end: {vals[curr]} {','.join([vals[c] for c in adj])}")
-        raise Exception(f"no path found: {len(visited)}")
-
-    try:
-        path = pathfind(end)
-    except Exception as e:
-        draw(grid, vals, {k: "\033[92m" for k in visited})
-        print("".join([chr(i) for i in range(ord("a"), ord("z") + 1)]))
-        raise e
-
-    ic(path)
-    g = {}
-    for thing in path:
-        g[thing] = vals[thing]
-    draw(grid, vals)
-    draw(grid, g)
-
-    return len(path) - 1
+    return len(path)
 
 
 # -- Tests

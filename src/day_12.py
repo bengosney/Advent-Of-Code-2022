@@ -57,6 +57,14 @@ def draw(grid: dict[Vec, int], data: dict[Vec, str] = {}, colour: dict[Vec, str]
     print("=" * width)
 
 
+def get_moves(grid, curr):
+    for move in MOVES:
+        new = move + curr
+        with contextlib.suppress(KeyError):
+            if abs(grid[new] - grid[curr]) <= 1:
+                yield new
+
+
 def part_1(input: str) -> int:
     grid: dict[Vec, int] = {}
     start: Vec = Vec(-1, -1)
@@ -78,42 +86,43 @@ def part_1(input: str) -> int:
                     grid[Vec(x, y)] = ord(height)
 
     nodes: dict[Vec, Node] = {}
-    for p in grid:
+    for pos in grid:
         connected = []
-        for m in MOVES:
-            n = p + m
+        for move in MOVES:
+            new = pos + move
             with contextlib.suppress(KeyError):
-                if abs(grid[n] - grid[p]) <= 1:
-                    connected.append(n)
+                if abs(grid[new] - grid[pos]) <= 1:
+                    connected.append(new)
 
-        nodes[p] = Node(pos=p, connected=connected)
+        # if len(connected) == 1:
+        #    ic(p)
+        nodes[pos] = Node(pos=pos, connected=connected)
 
-    draw(grid, vals)
     ic(start)
     ic(end)
-    # ic(nodes)
 
     visited: list[Vec] = []
 
-    def pathfind(start_point: Vec):
-        # global visited
+    def pathfind(start_point: Vec, end_point: Vec):
         paths = [[start_point]]
-        # visited = []
         while len(paths):
             path = paths.pop(0)
             for curr in nodes[path[-1]].connected:
                 if curr not in path and curr not in visited:
                     newpath = list(path)
                     newpath.append(curr)
-                    if curr == end:
+                    if curr == end_point:
                         return newpath
 
                     paths.append(newpath)
                     visited.append(curr)
+
+                get_moves(grid, curr)
+                # ic(f"dead end: {vals[curr]} {','.join([vals[c] for c in adj])}")
         raise Exception(f"no path found: {len(visited)}")
 
     try:
-        path = pathfind(end)
+        path = pathfind(end, start)
     except Exception as e:
         draw(grid, vals, {k: "\033[92m" for k in visited})
         print("".join([chr(i) for i in range(ord("a"), ord("z") + 1)]))

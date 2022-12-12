@@ -1,4 +1,5 @@
 # Standard Library
+import contextlib
 from dataclasses import dataclass
 from typing import Self
 
@@ -38,7 +39,7 @@ RIGHT = Vec(1, 0)
 MOVES = [UP, DOWN, LEFT, RIGHT]
 
 
-def draw(grid: dict[Vec, int], data: dict[Vec, str] = {}):
+def draw(grid: dict[Vec, int], data: dict[Vec, str] = {}, colour: dict[Vec, str] = {}):
     width = 0
     height = 0
     for v in grid:
@@ -49,7 +50,9 @@ def draw(grid: dict[Vec, int], data: dict[Vec, str] = {}):
     height += 1
     print("=" * width)
     for y in range(height):
-        row = "".join(data.get(Vec(x, y), ".") for x in range(width))
+        row = ""
+        for x in range(width):
+            row += colour.get(Vec(x, y), "") + data.get(Vec(x, y), ".") + "\033[0m"
         print(row)
     print("=" * width)
 
@@ -67,29 +70,35 @@ def part_1(input: str) -> int:
             match col:
                 case "S":
                     start = Vec(x, y)
-                    grid[Vec(x, y)] = 0
+                    grid[Vec(x, y)] = ord("a")
                 case "E":
                     end = Vec(x, y)
-                    grid[Vec(x, y)] = 26
+                    grid[Vec(x, y)] = ord("z")
                 case height:
-                    grid[Vec(x, y)] = ord(height) - 96
+                    grid[Vec(x, y)] = ord(height)
 
     nodes: dict[Vec, Node] = {}
     for p in grid:
         connected = []
         for m in MOVES:
             n = p + m
-            if n in grid and abs(grid[n] - grid[p]) <= 1:
-                connected.append(n)
+            with contextlib.suppress(KeyError):
+                if abs(grid[n] - grid[p]) <= 1:
+                    connected.append(n)
 
         nodes[p] = Node(pos=p, connected=connected)
 
-    # ic(start)
-    # ic(end)
+    draw(grid, vals)
+    ic(start)
+    ic(end)
     # ic(nodes)
-    def pathfind():
-        paths = [[start]]
-        visited = []
+
+    visited: list[Vec] = []
+
+    def pathfind(start_point: Vec):
+        # global visited
+        paths = [[start_point]]
+        # visited = []
         while len(paths):
             path = paths.pop(0)
             for curr in nodes[path[-1]].connected:
@@ -101,9 +110,14 @@ def part_1(input: str) -> int:
 
                     paths.append(newpath)
                     visited.append(curr)
-        raise Exception("no path found")
+        raise Exception(f"no path found: {len(visited)}")
 
-    path = pathfind()
+    try:
+        path = pathfind(end)
+    except Exception as e:
+        draw(grid, vals, {k: "\033[92m" for k in visited})
+        print("".join([chr(i) for i in range(ord("a"), ord("z") + 1)]))
+        raise e
 
     ic(path)
     g = {}
@@ -140,9 +154,9 @@ def test_part_1():
 #     assert part_2(test_input) is not None
 
 
-# def test_part_1_real():
-#     real_input = read_input(__file__)
-#     assert part_1(real_input) is not None
+def test_part_1_real():
+    real_input = read_input(__file__)
+    assert part_1(real_input) is not None
 
 
 # def test_part_2_real():

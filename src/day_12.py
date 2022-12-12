@@ -48,7 +48,7 @@ def build_grid(input: str) -> tuple[Vec, Vec, dict[Vec, int]]:
 
 
 def path_find(nodes: dict[Vec, Node], start_point: Vec, end_condition: Callable[[Vec], bool]):
-    paths = [[start_point]]
+    paths: list[list[Vec]] = [[start_point]]
     visited: list[Vec] = []
     while len(paths):
         path = paths.pop(0)
@@ -56,7 +56,7 @@ def path_find(nodes: dict[Vec, Node], start_point: Vec, end_condition: Callable[
             if end_condition(curr):
                 return path
 
-            if curr not in path and curr not in visited:
+            if curr not in visited:
                 new_path = list(path)
                 new_path.append(curr)
                 paths.append(new_path)

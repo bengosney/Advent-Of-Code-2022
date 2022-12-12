@@ -139,7 +139,82 @@ def part_1(input: str) -> int:
 
 
 def part_2(input: str) -> int:
-    pass
+    grid: dict[Vec, int] = {}
+    start: Vec = Vec(-1, -1)
+    end: Vec = Vec(-1, -1)
+
+    vals = {}
+
+    for y, line in enumerate(input.split("\n")):
+        for x, col in enumerate(line):
+            vals[Vec(x, y)] = col
+            match col:
+                case "S":
+                    start = Vec(x, y)
+                    grid[Vec(x, y)] = ord("a")
+                case "E":
+                    end = Vec(x, y)
+                    grid[Vec(x, y)] = ord("z")
+                case height:
+                    grid[Vec(x, y)] = ord(height)
+
+    nodes: dict[Vec, Node] = {}
+    for pos in grid:
+        connected = []
+        for move in MOVES:
+            new = pos + move
+            with contextlib.suppress(KeyError):
+                if grid[pos] == grid[new]:
+                    connected.append(new)
+
+                if (grid[pos] - 1) == grid[new]:
+                    connected.append(new)
+
+                if grid[pos] < grid[new]:
+                    connected.append(new)
+
+        # if len(connected) == 1:
+        #    ic(p)
+        nodes[pos] = Node(pos=pos, connected=connected)
+
+    ic(start)
+    ic(end)
+
+    visited: list[Vec] = []
+
+    def pathfind(start_point: Vec):
+        paths = [[start_point]]
+        while len(paths):
+            path = paths.pop(0)
+            for curr in nodes[path[-1]].connected:
+                if curr not in path and curr not in visited:
+                    newpath = list(path)
+                    newpath.append(curr)
+                    if grid[curr] == ord("a"):
+                        return newpath
+
+                    paths.append(newpath)
+                    visited.append(curr)
+
+                get_moves(grid, curr)
+                # ic(f"dead end: {vals[curr]} {','.join([vals[c] for c in adj])}")
+        raise Exception(f"no path found: {len(visited)}")
+
+    try:
+        path = pathfind(end)
+    except Exception as e:
+        draw(grid, vals, {k: "\033[92m" for k in visited})
+        print("".join([chr(i) for i in range(ord("a"), ord("z") + 1)]))
+        raise e
+
+    ic(path)
+    g = {}
+    for thing in path:
+        g[thing] = vals[thing]
+    draw(grid, vals)
+    draw(grid, g)
+
+    return len(path) - 1
 
 
 # -- Tests

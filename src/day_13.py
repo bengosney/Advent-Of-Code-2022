@@ -6,6 +6,30 @@ from typing import Literal
 from utils import no_input_skip, read_input
 
 
+def parse(packet_row: str):
+    def p(packet: list):
+        _packet = []
+
+        while len(packet):
+            c = packet.pop(0)
+            match c:
+                case "[":
+                    _packet.append(p(packet))
+                case "]":
+                    return _packet
+                case ",":
+                    num = ""
+                case n:
+                    num = n
+                    while len(packet) and packet[0].isnumeric():
+                        num += packet.pop(0)
+                    _packet.append(int(num))
+
+        return _packet
+
+    return p(list(packet_row)[1:-1])
+
+
 def compare(packet_1, packet_2) -> Literal[-1] | Literal[0] | Literal[1]:
     _packet_1 = list(packet_1)
     _packet_2 = list(packet_2)
@@ -36,7 +60,7 @@ def compare(packet_1, packet_2) -> Literal[-1] | Literal[0] | Literal[1]:
 def part_1(input: str) -> int:
     correct = []
     for i, packet_pair in enumerate(input.split("\n\n")):
-        packet_1, packet_2 = list(map(eval, packet_pair.split("\n")))
+        packet_1, packet_2 = list(map(parse, packet_pair.split("\n")))
         if compare(packet_1, packet_2) >= 0:
             correct.append(i + 1)
 
@@ -44,7 +68,7 @@ def part_1(input: str) -> int:
 
 
 def part_2(input: str) -> int:
-    packets = list(map(eval, filter(lambda x: x != "", input.split("\n"))))
+    packets = list(map(parse, filter(lambda x: x != "", input.split("\n"))))
     packets.extend(([[2]], [[6]]))
 
     packets.sort(key=cmp_to_key(compare), reverse=True)
@@ -79,6 +103,12 @@ def get_example_input() -> str:
 
 [1,[2,[3,[4,[5,6,7]]]],8,9]
 [1,[2,[3,[4,[5,6,0]]]],8,9]"""
+
+
+def test_parser():
+    test_input = get_example_input()
+    for row in filter(lambda x: x != "", test_input.split("\n")):
+        assert parse(row) == eval(row)
 
 
 def test_part_1():

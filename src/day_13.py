@@ -1,44 +1,55 @@
+# Standard Library
+from functools import cmp_to_key
+from typing import Literal
+
 # First Party
 from utils import no_input_skip, read_input
 
 
-def compare(packet_1, packet_2) -> bool | None:
-    for i in range(min(len(packet_1), len(packet_2))):
-        if isinstance(packet_1[i], list) and not isinstance(packet_2[i], list):
-            packet_2[i] = [packet_2[i]]
+def compare(packet_1, packet_2) -> Literal[-1] | Literal[0] | Literal[1]:
+    _packet_1 = list(packet_1)
+    _packet_2 = list(packet_2)
+    for i in range(min(len(_packet_1), len(_packet_2))):
+        if isinstance(_packet_1[i], list) and not isinstance(_packet_2[i], list):
+            _packet_2[i] = [_packet_2[i]]
 
-        if isinstance(packet_2[i], list) and not isinstance(packet_1[i], list):
-            packet_1[i] = [packet_1[i]]
+        if isinstance(_packet_2[i], list) and not isinstance(_packet_1[i], list):
+            _packet_1[i] = [_packet_1[i]]
 
-        if isinstance(packet_1[i], list) and isinstance(packet_2[i], list):
-            if (res := compare(packet_1[i], packet_2[i])) is not None:
+        if isinstance(_packet_1[i], list) or isinstance(_packet_2[i], list):
+            if (res := compare(_packet_1[i], _packet_2[i])) != 0:
                 return res
+            continue
 
-        if packet_1[i] < packet_2[i]:
-            return True
+        if _packet_1[i] < _packet_2[i]:
+            return 1
 
-        if packet_1[i] > packet_2[i]:
-            return False
+        if _packet_1[i] > _packet_2[i]:
+            return -1
 
-    if len(packet_1) == len(packet_2):
-        return None
+    if len(_packet_1) == len(_packet_2):
+        return 0
 
-    return len(packet_1) < len(packet_2)
+    return 1 if len(_packet_1) < len(_packet_2) else -1
 
 
 def part_1(input: str) -> int:
     correct = []
     for i, packet_pair in enumerate(input.split("\n\n")):
         packet_1, packet_2 = list(map(eval, packet_pair.split("\n")))
-        res = compare(packet_1, packet_2)
-        if res or res is None:
+        if compare(packet_1, packet_2) >= 0:
             correct.append(i + 1)
 
     return sum(correct)
 
 
 def part_2(input: str) -> int:
-    pass
+    packets = list(map(eval, filter(lambda x: x != "", input.split("\n"))))
+    packets.extend(([[2]], [[6]]))
+
+    packets.sort(key=cmp_to_key(compare), reverse=True)
+
+    return (packets.index([[2]]) + 1) * (packets.index([[6]]) + 1)
 
 
 # -- Tests
@@ -75,9 +86,9 @@ def test_part_1():
     assert part_1(test_input) == 13
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input) == 140
 
 
 @no_input_skip
@@ -86,10 +97,10 @@ def test_part_1_real():
     assert part_1(real_input) == 5208
 
 
-# @no_input_skip
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+@no_input_skip
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input) == 25792
 
 
 # -- Main

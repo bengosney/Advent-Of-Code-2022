@@ -39,16 +39,14 @@ START: Point = 500, 0
 
 
 def init_sim(input: str) -> tuple[Sim, int]:
-    max_y: int = 0
     sim: Sim = defaultdict(lambda: ".")
 
     for row in input.split("\n"):
         points = row.split(" -> ")
-        point = points.pop(0)
-        x1, y1 = map(int, point.split(","))
-        while len(points):
-            point = points.pop(0)
-            x2, y2 = map(int, point.split(","))
+
+        for i in range(len(points) - 1):
+            x1, y1 = map(int, points[i].split(","))
+            x2, y2 = map(int, points[i + 1].split(","))
 
             sim[(x1, y1)] = "#"
 
@@ -58,12 +56,7 @@ def init_sim(input: str) -> tuple[Sim, int]:
             for i in range(min(y1, y2), max(y1, y2) + 1):
                 sim[(x1, i)] = "#"
 
-            max_y = max(max_y, y2, y1)
-
-            x1 = x2
-            y1 = y2
-
-    return sim, max_y
+    return sim, max(map(lambda k: k[1], sim.keys()))
 
 
 def part_1(input: str) -> int:
@@ -72,11 +65,13 @@ def part_1(input: str) -> int:
     sand = 0
     px, py = START
     sim[(500, 0)] = "+"
-    for _ in range(500000):
+
+    while True:
         cx, cy = step(sim, px, py)
 
         if cy > max_y:
             return sand
+
         if cx == px and cy == py:
             px, py = START
             sand += 1
@@ -84,7 +79,6 @@ def part_1(input: str) -> int:
         else:
             px = cx
             py = cy
-    raise Exception("Sim over time")
 
 
 def part_2(input: str) -> int:
@@ -93,11 +87,12 @@ def part_2(input: str) -> int:
     sand = 1
     px, py = START
     sim[(500, 0)] = "+"
-    for _ in range(10000000):
+    while True:
         cx, cy = step(sim, px, py, max_y + 2)
 
         if (cx, cy) == START:
             return sand
+
         if cx == px and cy == py:
             px, py = START
             sand += 1
@@ -105,7 +100,6 @@ def part_2(input: str) -> int:
         else:
             px = cx
             py = cy
-    raise Exception("Sim over time")
 
 
 # -- Tests

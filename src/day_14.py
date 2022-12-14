@@ -8,18 +8,21 @@ Point = tuple[int, int]
 Sim = dict[Point, str]
 
 
-def draw_sim(sim: Sim) -> None:
-    x = (min(map(lambda k: k[0], sim.keys())), max(map(lambda k: k[0], sim.keys())))
-    y = (min(map(lambda k: k[1], sim.keys())), max(map(lambda k: k[1], sim.keys())))
+def draw(sim: Sim) -> None:
+    x = list(map(lambda k: k[0], sim))
+    y = list(map(lambda k: k[1], sim))
 
-    pad = 5
-    print()
-    for _y in range(y[0] - pad, (y[1] + pad)):
+    padding = 2
+    print("-" * ((max(x) - min(x)) + (padding * 2)))
+    for _y in range(min(y) - padding, (max(y) + padding)):
         row = ""
-        for _x in range(x[0] - pad, x[1] + pad):
-            row += sim[(_x, _y)]
+        for _x in range(min(x) - padding, max(x) + padding):
+            if (_x, _y) == START:
+                row += "+"
+            else:
+                row += sim[(_x, _y)]
         print(row)
-    print(f"{x}, {y}")
+    print("-" * ((max(x) - min(x)) + (padding * 2)))
 
 
 def step(sim: Sim, x: int, y: int, floor: int = 0) -> tuple[int, int]:

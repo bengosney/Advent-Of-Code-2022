@@ -1,24 +1,27 @@
 # Standard Library
 from collections import defaultdict
+from collections.abc import Iterable
 from itertools import pairwise
+from typing import DefaultDict, Literal
 
 # First Party
 from utils import no_input_skip, read_input
 
 Point = tuple[int, int]
-Sim = dict[Point, str]
+ValidSimValues = Literal[".", "#", "o"]
+Sim = dict[Point, ValidSimValues]
 
 
 def draw(sim: Sim) -> None:
     x = list(map(lambda k: k[0], sim))
     y = list(map(lambda k: k[1], sim))
 
-    def _range(i: list[int], padding: int = 2):
+    def range_over(i: list[int], padding: int = 2) -> Iterable[int]:
         return range(min(i) - padding, (max(i) + padding))
 
     print("---")
-    for _y in _range(y):
-        for _x in _range(x):
+    for _y in range_over(y):
+        for _x in range_over(x):
             print("+" if (_x, _y) == START else sim[(_x, _y)], end="")
         print()
     print("---")
@@ -40,7 +43,7 @@ START: Point = 500, 0
 
 
 def init_sim(input: str) -> tuple[Sim, int]:
-    sim: Sim = defaultdict(lambda: ".")
+    sim: DefaultDict[Point, ValidSimValues] = defaultdict(lambda: ".")
 
     for row in input.split("\n"):
         points = row.split(" -> ")

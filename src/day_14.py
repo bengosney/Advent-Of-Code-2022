@@ -8,7 +8,7 @@ from utils import no_input_skip, read_input
 def draw(sim, x: tuple[int, int], y: tuple[int, int]):
     pad = 5
     print()
-    for _y in range(y[0] - pad, (y[1] + pad) - 125):
+    for _y in range(y[0] - pad, (y[1] + pad)):
         row = ""
         for _x in range(x[0] - pad, x[1] + pad):
             row += sim[(_x, _y)]
@@ -16,7 +16,10 @@ def draw(sim, x: tuple[int, int], y: tuple[int, int]):
     print(f"{x}, {y}")
 
 
-def step(sim, x: int, y: int) -> tuple[int, int]:
+def step(sim, x: int, y: int, floor: int = 0) -> tuple[int, int]:
+    if y + 1 == floor:
+        return x, y
+
     if sim[(x, y + 1)] == ".":
         return x, y + 1
 
@@ -29,12 +32,15 @@ def step(sim, x: int, y: int) -> tuple[int, int]:
     return x, y
 
 
-def part_1(input: str) -> int:
-    min_x = 9999
-    max_x = 0
-    min_y = 9999
-    max_y = 0
-    sim = defaultdict(lambda: ".")
+Point = tuple[int, int]
+Sim = dict[Point, str]
+
+START: Point = 500, 0
+
+
+def init_sim(input: str) -> tuple[Sim, int]:
+    max_y: int = 0
+    sim: Sim = defaultdict(lambda: ".")
 
     for row in input.split("\n"):
         points = row.split(" -> ")
@@ -52,34 +58,29 @@ def part_1(input: str) -> int:
             for i in range(min(y1, y2), max(y1, y2) + 1):
                 sim[(x1, i)] = "#"
 
-            min_x = min(min_x, x2, x1)
-            min_y = min(min_y, y2, y1)
-            max_x = max(max_x, x2, x1)
             max_y = max(max_y, y2, y1)
 
             x1 = x2
             y1 = y2
 
-    def _draw():
-        draw(sim, (min_x, max_x), (min_y, max_y))
+    return sim, max_y
+
+
+def part_1(input: str) -> int:
+    sim, max_y = init_sim(input)
 
     sand = 0
-    px = 500
-    py = 0
+    px, py = START
     sim[(500, 0)] = "+"
-    _draw()
     for _ in range(500000):
         cx, cy = step(sim, px, py)
 
         if cy > max_y:
-            _draw()
             return sand
         if cx == px and cy == py:
-            px = 500
-            py = 0
+            px, py = START
             sand += 1
             sim[(cx, cy)] = "o"
-            _draw()
         else:
             px = cx
             py = cy
@@ -87,7 +88,24 @@ def part_1(input: str) -> int:
 
 
 def part_2(input: str) -> int:
-    pass
+    sim, max_y = init_sim(input)
+
+    sand = 1
+    px, py = START
+    sim[(500, 0)] = "+"
+    for _ in range(10000000):
+        cx, cy = step(sim, px, py, max_y + 2)
+
+        if (cx, cy) == START:
+            return sand
+        if cx == px and cy == py:
+            px, py = START
+            sand += 1
+            sim[(cx, cy)] = "o"
+        else:
+            px = cx
+            py = cy
+    raise Exception("Sim over time")
 
 
 # -- Tests
@@ -103,9 +121,9 @@ def test_part_1():
     assert part_1(test_input) == 24
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input) == 93
 
 
 @no_input_skip
@@ -114,10 +132,10 @@ def test_part_1_real():
     assert part_1(real_input) == 674
 
 
-# @no_input_skip
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) == 24958
+@no_input_skip
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input) == 24958
 
 
 # -- Main

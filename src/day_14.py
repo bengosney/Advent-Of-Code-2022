@@ -16,12 +16,10 @@ def draw(sim: Sim) -> None:
     padding = 2
     print("-" * ((max(x) - min(x)) + (padding * 2)))
     for _y in range(min(y) - padding, (max(y) + padding)):
-        row = ""
-        for _x in range(min(x) - padding, max(x) + padding):
-            if (_x, _y) == START:
-                row += "+"
-            else:
-                row += sim[(_x, _y)]
+        row = "".join(
+            "+" if (_x, _y) == START else sim[(_x, _y)]
+            for _x in range(min(x) - padding, max(x) + padding)
+        )
         print(row)
     print("-" * ((max(x) - min(x)) + (padding * 2)))
 
@@ -36,10 +34,7 @@ def step(sim: Sim, x: int, y: int, floor: int = 0) -> tuple[int, int]:
     if sim[(x - 1, y + 1)] == ".":
         return x - 1, y + 1
 
-    if sim[(x + 1, y + 1)] == ".":
-        return x + 1, y + 1
-
-    return x, y
+    return (x + 1, y + 1) if sim[(x + 1, y + 1)] == "." else (x, y)
 
 
 START: Point = 500, 0

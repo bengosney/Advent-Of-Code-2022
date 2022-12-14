@@ -13,31 +13,25 @@ def draw(sim: Sim) -> None:
     x = list(map(lambda k: k[0], sim))
     y = list(map(lambda k: k[1], sim))
 
-    padding = 2
-    print("-" * ((max(x) - min(x)) + (padding * 2)))
-    for _y in range(min(y) - padding, (max(y) + padding)):
-        row = ""
-        for _x in range(min(x) - padding, max(x) + padding):
-            if (_x, _y) == START:
-                row += "+"
-            else:
-                row += sim[(_x, _y)]
-        print(row)
-    print("-" * ((max(x) - min(x)) + (padding * 2)))
+    def _range(i: list[int], padding: int = 2):
+        return range(min(i) - padding, (max(i) + padding))
+
+    print("---")
+    for _y in _range(y):
+        for _x in _range(x):
+            print("+" if (_x, _y) == START else sim[(_x, _y)], end="")
+        print()
+    print("---")
 
 
 def step(sim: Sim, x: int, y: int, floor: int = 0) -> tuple[int, int]:
-    if y + 1 == floor:
-        return x, y
-
-    if sim[(x, y + 1)] == ".":
-        return x, y + 1
-
-    if sim[(x - 1, y + 1)] == ".":
-        return x - 1, y + 1
-
-    if sim[(x + 1, y + 1)] == ".":
-        return x + 1, y + 1
+    if y + 1 != floor:
+        if sim[(x, y + 1)] == ".":
+            return x, y + 1
+        elif sim[(x - 1, y + 1)] == ".":
+            return x - 1, y + 1
+        elif sim[(x + 1, y + 1)] == ".":
+            return x + 1, y + 1
 
     return x, y
 

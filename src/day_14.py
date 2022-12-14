@@ -1,5 +1,6 @@
 # Standard Library
 from collections import defaultdict
+from itertools import pairwise
 
 # First Party
 from utils import no_input_skip, read_input
@@ -50,11 +51,9 @@ def init_sim(input: str) -> tuple[Sim, int]:
     for row in input.split("\n"):
         points = row.split(" -> ")
 
-        for i in range(len(points) - 1):
-            x1, y1 = map(int, points[i].split(","))
-            x2, y2 = map(int, points[i + 1].split(","))
-
-            sim[(x1, y1)] = "#"
+        for p1, p2 in pairwise(points):
+            x1, y1 = map(int, p1.split(","))
+            x2, y2 = map(int, p2.split(","))
 
             for i in range(min(x1, x2), max(x1, x2) + 1):
                 sim[(i, y1)] = "#"

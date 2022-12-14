@@ -4,8 +4,14 @@ from collections import defaultdict
 # First Party
 from utils import no_input_skip, read_input
 
+Point = tuple[int, int]
+Sim = dict[Point, str]
 
-def draw(sim, x: tuple[int, int], y: tuple[int, int]):
+
+def draw_sim(sim: Sim) -> None:
+    x = (min(map(lambda k: k[0], sim.keys())), max(map(lambda k: k[0], sim.keys())))
+    y = (min(map(lambda k: k[1], sim.keys())), max(map(lambda k: k[1], sim.keys())))
+
     pad = 5
     print()
     for _y in range(y[0] - pad, (y[1] + pad)):
@@ -16,7 +22,7 @@ def draw(sim, x: tuple[int, int], y: tuple[int, int]):
     print(f"{x}, {y}")
 
 
-def step(sim, x: int, y: int, floor: int = 0) -> tuple[int, int]:
+def step(sim: Sim, x: int, y: int, floor: int = 0) -> tuple[int, int]:
     if y + 1 == floor:
         return x, y
 
@@ -31,9 +37,6 @@ def step(sim, x: int, y: int, floor: int = 0) -> tuple[int, int]:
 
     return x, y
 
-
-Point = tuple[int, int]
-Sim = dict[Point, str]
 
 START: Point = 500, 0
 
@@ -64,7 +67,6 @@ def part_1(input: str) -> int:
 
     sand = 0
     px, py = START
-    sim[(500, 0)] = "+"
 
     while True:
         cx, cy = step(sim, px, py)
@@ -86,9 +88,10 @@ def part_2(input: str) -> int:
 
     sand = 1
     px, py = START
-    sim[(500, 0)] = "+"
+    floor = max_y + 2
+
     while True:
-        cx, cy = step(sim, px, py, max_y + 2)
+        cx, cy = step(sim, px, py, floor)
 
         if (cx, cy) == START:
             return sand

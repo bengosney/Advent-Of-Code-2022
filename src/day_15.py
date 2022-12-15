@@ -30,11 +30,22 @@ class Sensor:
 
     def covers(self, row: int) -> set[int]:
         cover_x = self.dist() - abs(self.pos.y - row)
-        thing = set()
+        covered = set()
         if cover_x > 0:
             for x in range(-cover_x, cover_x + 1):
-                thing.add(self.pos.x + x)
-        return thing
+                covered.add(self.pos.x + x)
+        return covered
+
+    def covers_range(self, row: int, minmax: tuple[int, int]) -> set[int]:
+        cover_x = self.dist() - abs(self.pos.y - row)
+        covered = set()
+        if cover_x > 0:
+            for x in range(-cover_x, cover_x + 1):
+                nx = self.pos.x + x
+                if nx >= minmax[0] and nx <= minmax[1]:
+                    covered.add(nx)
+
+        return covered
 
     def walk(self) -> Iterable[Vec]:
         dist = self.dist()
@@ -64,8 +75,25 @@ def part_1(input: str, test_row: int) -> int:
     return len(covers - beacons)
 
 
-def part_2(input: str) -> int:
-    pass
+def part_2(input: str, max_pos: int) -> int:
+    regex = r"x=(-?\d+),\s+y=(-?\d+)"
+
+    extents = set(range(max_pos + 1))
+    sensors: list[Sensor] = []
+    for row in input.split("\n"):
+        matches = re.findall(regex, row, re.MULTILINE)
+
+        sensor = Sensor(Vec(*map(int, matches[0])), Vec(*map(int, matches[1])))
+        sensors.append(sensor)
+
+    for y in range(max_pos + 1):
+        covers = set()
+        for sensor in sensors:
+            covers |= sensor.covers_range(y, (0, max_pos))
+
+        if len(covers) < len(extents):
+            distress = extents - covers
+            return (distress.pop() * 4000000) + y
 
 
 # -- Tests
@@ -93,9 +121,9 @@ def test_part_1():
     assert part_1(test_input, 10) == 26
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input, 20) == 56000011
 
 
 @no_input_skip
@@ -114,9 +142,9 @@ def test_part_1_real():
 
 if __name__ == "__main__":
 
-    part_1(get_example_input(), 10)
+    part_2(get_example_input(), 20)
 
     real_input = read_input(__file__)
 
     print(f"Part1: {part_1(real_input, 2000000)}")
-    print(f"Part2: {part_2(real_input)}")
+    print(f"Part2: {part_2(real_input, 4000000)}")

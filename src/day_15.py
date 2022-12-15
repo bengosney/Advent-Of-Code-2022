@@ -2,6 +2,7 @@
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Self
 
 # First Party
@@ -19,12 +20,19 @@ class Vec:
     def dist_to(self, other: Self) -> int:
         return abs(self.x - other.x) + abs(self.y - other.y)
 
+    def to_tuple(self) -> tuple[int, int]:
+        return (self.x, self.y)
+
+    def is_less_than(self, max_pos: int) -> bool:
+        return 0 < self.x < max_pos and 0 < self.y < max_pos
+
 
 @dataclass(frozen=True)
 class Sensor:
     pos: Vec
     beacon: Vec
 
+    @lru_cache
     def dist(self) -> int:
         return self.pos.dist_to(self.beacon)
 
@@ -36,16 +44,20 @@ class Sensor:
                 covered.add(self.pos.x + x)
         return covered
 
-    def covers_range(self, row: int, minmax: tuple[int, int]) -> set[int]:
-        cover_x = self.dist() - abs(self.pos.y - row)
-        covered = set()
-        if cover_x > 0:
-            for x in range(-cover_x, cover_x + 1):
-                nx = self.pos.x + x
-                if nx >= minmax[0] and nx <= minmax[1]:
-                    covered.add(nx)
+    def contains(self, point: Vec) -> bool:
+        return self.dist() >= self.pos.dist_to(point)
 
-        return covered
+    def walk_edges(self) -> Iterable[Vec]:
+        sx = self.pos.x
+        sy = self.pos.y
+
+        for x in range(-1, self.dist() + 1):
+            y = (self.dist() - 1) - x
+
+            yield Vec(sx + x, sy + y) + Vec(1, 1)
+            yield Vec(sx - x, sy - y) + Vec(-1, -1)
+            yield Vec(sx + x, sy - y) + Vec(1, -1)
+            yield Vec(sx - x, sy + y) + Vec(-1, 1)
 
     def walk(self) -> Iterable[Vec]:
         dist = self.dist()
@@ -75,10 +87,27 @@ def part_1(input: str, test_row: int) -> int:
     return len(covers - beacons)
 
 
+def draw(sim: dict[tuple[int, int], str]) -> None:
+    x = list(map(lambda k: k[0], sim))
+    y = list(map(lambda k: k[1], sim))
+
+    def range_over(i: list[int], padding: int = 2) -> Iterable[int]:
+        return range(min(i) - padding, (max(i) + padding) + 1)
+
+    print("---")
+    print("".join(str(i) if 0 < i < 10 else " " for i in range_over(x)))
+
+    for _y in range_over(y):
+        print(f"{_y:4} : ", end="")
+        for _x in range_over(x):
+            print(sim[(_x, _y)], end="")
+        print()
+    print("---")
+
+
 def part_2(input: str, max_pos: int) -> int:
     regex = r"x=(-?\d+),\s+y=(-?\d+)"
 
-    extents = set(range(max_pos + 1))
     sensors: list[Sensor] = []
     for row in input.split("\n"):
         matches = re.findall(regex, row, re.MULTILINE)
@@ -86,14 +115,37 @@ def part_2(input: str, max_pos: int) -> int:
         sensor = Sensor(Vec(*map(int, matches[0])), Vec(*map(int, matches[1])))
         sensors.append(sensor)
 
-    for y in range(max_pos + 1):
-        covers = set()
-        for sensor in sensors:
-            covers |= sensor.covers_range(y, (0, max_pos))
+    # sim = defaultdict(lambda: ".")
+    # for sensor in sensors:
+    #    for pos in sensor.walk():
+    #        if not pos.is_less_than(max_pos):
+    #            continue
+    #        sim[pos.to_tuple()] = '#'
+    #
+    # for sensor in sensors:
+    #    for pos in sensor.walk_edges():
+    #        if not pos.is_less_than(max_pos):
+    #            continue
+    #        if sim[pos.to_tuple()] != ".":
+    #            sim[pos.to_tuple()] = "@"
+    #        else:
+    #            for s in sensors:
+    #                if s.contains(pos):
+    #                    continue
+    #                #sim[pos.to_tuple()] = "-"
 
-        if len(covers) < len(extents):
-            distress = extents - covers
-            return (distress.pop() * 4000000) + y
+    for i, sensor in enumerate(sensors):
+        print(f"\n{i}")
+        for e in sensor.walk_edges():
+            if not e.is_less_than(max_pos):
+                continue
+
+            if any(s.contains(e) for s in sensors):
+                continue
+
+            return (e.x * 4000000) + e.y
+
+    raise Exception("Nothing found")
 
 
 # -- Tests

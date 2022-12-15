@@ -17,7 +17,7 @@ def draw(sim: Sim) -> None:
     y = list(map(lambda k: k[1], sim))
 
     def range_over(i: list[int], padding: int = 2) -> Iterable[int]:
-        return range(min(i) - padding, (max(i) + padding))
+        return range(min(i) - padding, (max(i) + padding) + 1)
 
     print("---")
     for _y in range_over(y):

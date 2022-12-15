@@ -54,13 +54,6 @@ class Sensor:
             yield Vec((sx + x) + 1, (sy - y) - 1)
             yield Vec((sx - x) - 1, (sy + y) + 1)
 
-    def walk(self) -> Iterable[Vec]:
-        dist = int(self)
-        for x in range(-dist, dist + 1):
-            y_dist = dist - abs(x)
-            for y in range(-y_dist, y_dist + 1):
-                yield self.pos + Vec(x, y)
-
 
 def part_1(input: str, test_row: int) -> int:
     regex = r"x=(-?\d+),\s+y=(-?\d+)"
@@ -136,10 +129,10 @@ def test_part_1_real():
     assert part_1(real_input, 2000000) == 5176944
 
 
-# @no_input_skip
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) == 13350458933732
+@no_input_skip
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input, 4000000) == 13350458933732
 
 
 # -- Main

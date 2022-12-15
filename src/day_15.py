@@ -2,7 +2,6 @@
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Self
 
 # First Party
@@ -20,8 +19,8 @@ class Vec:
     def dist_to(self, other: Self) -> int:
         return abs(self.x - other.x) + abs(self.y - other.y)
 
-    def is_less_than(self, max_pos: int) -> bool:
-        return 0 < self.x < max_pos and 0 < self.y < max_pos
+    def is_in_range(self, max_pos: int, min_pos: int = 0) -> bool:
+        return min_pos < self.x < max_pos and min_pos < self.y < max_pos
 
 
 @dataclass(frozen=True)
@@ -29,12 +28,11 @@ class Sensor:
     pos: Vec
     beacon: Vec
 
-    @lru_cache
-    def dist(self) -> int:
+    def __int__(self) -> int:
         return self.pos.dist_to(self.beacon)
 
     def covers(self, row: int) -> set[int]:
-        cover_x = self.dist() - abs(self.pos.y - row)
+        cover_x = int(self) - abs(self.pos.y - row)
         covered = set()
         if cover_x > 0:
             for x in range(-cover_x, cover_x + 1):
@@ -42,14 +40,14 @@ class Sensor:
         return covered
 
     def contains(self, point: Vec) -> bool:
-        return self.dist() >= self.pos.dist_to(point)
+        return int(self) >= self.pos.dist_to(point)
 
     def walk_edges(self) -> Iterable[Vec]:
         sx = self.pos.x
         sy = self.pos.y
 
-        for x in range(-1, self.dist() + 1):
-            y = (self.dist() - 1) - x
+        for x in range(-1, int(self) + 1):
+            y = (int(self) - 1) - x
 
             yield Vec(sx + x, sy + y) + Vec(1, 1)
             yield Vec(sx - x, sy - y) + Vec(-1, -1)
@@ -57,7 +55,7 @@ class Sensor:
             yield Vec(sx - x, sy + y) + Vec(-1, 1)
 
     def walk(self) -> Iterable[Vec]:
-        dist = self.dist()
+        dist = int(self)
         for x in range(-dist, dist + 1):
             y_dist = dist - abs(x)
             for y in range(-y_dist, y_dist + 1):
@@ -96,13 +94,9 @@ def part_2(input: str, max_pos: int) -> int:
 
     for i in range(len(sensors)):
         for e in sensors[i].walk_edges():
-            if not e.is_less_than(max_pos):
-                continue
-
-            if any(sensors[j].contains(e) for j in range(i - 1, len(sensors))):
-                continue
-
-            return (e.x * 4000000) + e.y
+            if e.is_in_range(max_pos):
+                if all(not sensors[j].contains(e) for j in range(i - 1, len(sensors))):
+                    return (e.x * 4000000) + e.y
 
     raise Exception("Nothing found")
 
@@ -146,7 +140,7 @@ def test_part_1_real():
 # @no_input_skip
 # def test_part_2_real():
 #     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+#     assert part_2(real_input) == 13350458933732
 
 
 # -- Main

@@ -20,9 +20,6 @@ class Vec:
     def dist_to(self, other: Self) -> int:
         return abs(self.x - other.x) + abs(self.y - other.y)
 
-    def to_tuple(self) -> tuple[int, int]:
-        return (self.x, self.y)
-
     def is_less_than(self, max_pos: int) -> bool:
         return 0 < self.x < max_pos and 0 < self.y < max_pos
 
@@ -87,24 +84,6 @@ def part_1(input: str, test_row: int) -> int:
     return len(covers - beacons)
 
 
-def draw(sim: dict[tuple[int, int], str]) -> None:
-    x = list(map(lambda k: k[0], sim))
-    y = list(map(lambda k: k[1], sim))
-
-    def range_over(i: list[int], padding: int = 2) -> Iterable[int]:
-        return range(min(i) - padding, (max(i) + padding) + 1)
-
-    print("---")
-    print("".join(str(i) if 0 < i < 10 else " " for i in range_over(x)))
-
-    for _y in range_over(y):
-        print(f"{_y:4} : ", end="")
-        for _x in range_over(x):
-            print(sim[(_x, _y)], end="")
-        print()
-    print("---")
-
-
 def part_2(input: str, max_pos: int) -> int:
     regex = r"x=(-?\d+),\s+y=(-?\d+)"
 
@@ -115,32 +94,12 @@ def part_2(input: str, max_pos: int) -> int:
         sensor = Sensor(Vec(*map(int, matches[0])), Vec(*map(int, matches[1])))
         sensors.append(sensor)
 
-    # sim = defaultdict(lambda: ".")
-    # for sensor in sensors:
-    #    for pos in sensor.walk():
-    #        if not pos.is_less_than(max_pos):
-    #            continue
-    #        sim[pos.to_tuple()] = '#'
-    #
-    # for sensor in sensors:
-    #    for pos in sensor.walk_edges():
-    #        if not pos.is_less_than(max_pos):
-    #            continue
-    #        if sim[pos.to_tuple()] != ".":
-    #            sim[pos.to_tuple()] = "@"
-    #        else:
-    #            for s in sensors:
-    #                if s.contains(pos):
-    #                    continue
-    #                #sim[pos.to_tuple()] = "-"
-
-    for i, sensor in enumerate(sensors):
-        print(f"\n{i}")
-        for e in sensor.walk_edges():
+    for i in range(len(sensors)):
+        for e in sensors[i].walk_edges():
             if not e.is_less_than(max_pos):
                 continue
 
-            if any(s.contains(e) for s in sensors):
+            if any(sensors[j].contains(e) for j in range(i - 1, len(sensors))):
                 continue
 
             return (e.x * 4000000) + e.y
@@ -193,9 +152,6 @@ def test_part_1_real():
 # -- Main
 
 if __name__ == "__main__":
-
-    part_2(get_example_input(), 20)
-
     real_input = read_input(__file__)
 
     print(f"Part1: {part_1(real_input, 2000000)}")

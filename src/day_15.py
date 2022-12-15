@@ -1,5 +1,4 @@
 # Standard Library
-import contextlib
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -51,22 +50,18 @@ def part_1(input: str, test_row: int) -> int:
     sensors: list[Sensor] = []
     for row in input.split("\n"):
         matches = re.findall(regex, row, re.MULTILINE)
-        _sensor = Vec(*map(int, matches[0]))
-        _beacon = Vec(*map(int, matches[1]))
 
-        sensor = Sensor(_sensor, _beacon)
+        sensor = Sensor(Vec(*map(int, matches[0])), Vec(*map(int, matches[1])))
         sensors.append(sensor)
 
     covers = set()
+    beacons = set()
     for sensor in sensors:
         covers |= sensor.covers(test_row)
-
-    for sensor in sensors:
         if sensor.beacon.y == test_row:
-            with contextlib.suppress(KeyError):
-                covers.remove(sensor.beacon.x)
+            beacons.add(sensor.beacon.x)
 
-    return len(covers)
+    return len(covers - beacons)
 
 
 def part_2(input: str) -> int:

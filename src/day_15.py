@@ -39,7 +39,7 @@ class Sensor:
                 covered.add(self.pos.x + x)
         return covered
 
-    def contains(self, point: Vec) -> bool:
+    def __contains__(self, point: Vec) -> bool:
         return int(self) >= self.pos.dist_to(point)
 
     def walk_edges(self) -> Iterable[Vec]:
@@ -81,7 +81,7 @@ def part_2(input: str, max_pos: int) -> int:
 
     for i in range(len(sensors)):
         for e in sensors[i].walk_edges():
-            if e.is_in_range(max_pos) and all(not sensors[j].contains(e) for j in range(i - 1, len(sensors))):
+            if e.is_in_range(max_pos) and all(e not in sensors[j] for j in range(i - 1, len(sensors))):
                 return (e.x * 4000000) + e.y
 
     raise Exception("Nothing found")

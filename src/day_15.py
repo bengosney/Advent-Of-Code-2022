@@ -55,15 +55,16 @@ class Sensor:
             yield Vec((sx - x) - 1, (sy + y) + 1)
 
 
-def part_1(input: str, test_row: int) -> int:
+def get_sensors(input: str) -> Iterable[Sensor]:
     regex = r"x=(-?\d+),\s+y=(-?\d+)"
 
-    sensors: list[Sensor] = []
     for row in input.split("\n"):
         matches = re.findall(regex, row, re.MULTILINE)
+        yield Sensor(Vec(*map(int, matches[0])), Vec(*map(int, matches[1])))
 
-        sensor = Sensor(Vec(*map(int, matches[0])), Vec(*map(int, matches[1])))
-        sensors.append(sensor)
+
+def part_1(input: str, test_row: int) -> int:
+    sensors = get_sensors(input)
 
     covers = set()
     beacons = set()
@@ -76,14 +77,7 @@ def part_1(input: str, test_row: int) -> int:
 
 
 def part_2(input: str, max_pos: int) -> int:
-    regex = r"x=(-?\d+),\s+y=(-?\d+)"
-
-    sensors: list[Sensor] = []
-    for row in input.split("\n"):
-        matches = re.findall(regex, row, re.MULTILINE)
-
-        sensor = Sensor(Vec(*map(int, matches[0])), Vec(*map(int, matches[1])))
-        sensors.append(sensor)
+    sensors = list(get_sensors(input))
 
     for i in range(len(sensors)):
         for e in sensors[i].walk_edges():

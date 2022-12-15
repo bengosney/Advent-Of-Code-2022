@@ -49,10 +49,10 @@ class Sensor:
         for x in range(-1, int(self) + 1):
             y = (int(self) - 1) - x
 
-            yield Vec(sx + x, sy + y) + Vec(1, 1)
-            yield Vec(sx - x, sy - y) + Vec(-1, -1)
-            yield Vec(sx + x, sy - y) + Vec(1, -1)
-            yield Vec(sx - x, sy + y) + Vec(-1, 1)
+            yield Vec((sx + x) + 1, (sy + y) + 1)
+            yield Vec((sx - x) - 2, (sy - y) - 1)
+            yield Vec((sx + x) + 1, (sy - y) - 1)
+            yield Vec((sx - x) - 1, (sy + y) + 1)
 
     def walk(self) -> Iterable[Vec]:
         dist = int(self)
@@ -94,9 +94,8 @@ def part_2(input: str, max_pos: int) -> int:
 
     for i in range(len(sensors)):
         for e in sensors[i].walk_edges():
-            if e.is_in_range(max_pos):
-                if all(not sensors[j].contains(e) for j in range(i - 1, len(sensors))):
-                    return (e.x * 4000000) + e.y
+            if e.is_in_range(max_pos) and all(not sensors[j].contains(e) for j in range(i - 1, len(sensors))):
+                return (e.x * 4000000) + e.y
 
     raise Exception("Nothing found")
 

@@ -1,7 +1,7 @@
 # Standard Library
 import re
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache
 
 # First Party
 from utils import no_input_skip, read_input
@@ -25,11 +25,19 @@ def parse(input: str) -> dict[str, Valve]:
     return valves
 
 
+@cache
+def add_to(opened: frozenset, new: str) -> frozenset:
+    _opened = set(opened)
+    _opened.add(new)
+
+    return frozenset(_opened)
+
+
 def part_1(input: str) -> int:
     valves = parse(input)
 
-    @lru_cache(maxsize=None)
-    def tick(mins: int, opened: frozenset[str], curr: str) -> int:
+    @cache
+    def tick(mins: int, opened: frozenset, curr: str) -> int:
         if mins <= 0:
             return 0
 
@@ -38,12 +46,10 @@ def part_1(input: str) -> int:
             max_release = max(max_release, tick(mins - 1, opened, valve))
 
         if curr not in opened and valves[curr].flow > 0:
-            _opened = set(opened)
-            _opened.add(curr)
             mins -= 1
             valve_released = mins * valves[curr].flow
             for valve in valves[curr].connected:
-                max_release = max(max_release, valve_released + tick(mins - 1, frozenset(_opened), valve))
+                max_release = max(max_release, valve_released + tick(mins - 1, add_to(opened, curr), valve))
 
         return max_release
 
@@ -53,7 +59,7 @@ def part_1(input: str) -> int:
 def part_2(input: str) -> int:
     valves = parse(input)
 
-    @lru_cache(maxsize=None)
+    @cache
     def tick(mins: int, opened: frozenset[str], curr: str, elephant: bool) -> int:
         if mins <= 0:
             return tick(26, opened, "AA", False) if elephant else 0
@@ -63,12 +69,10 @@ def part_2(input: str) -> int:
             best = max(best, tick(mins - 1, opened, valve, elephant))
 
         if curr not in opened and valves[curr].flow > 0:
-            _opened = set(opened)
-            _opened.add(curr)
             mins -= 1
             released = mins * valves[curr].flow
             for valve in valves[curr].connected:
-                best = max(best, released + tick(mins - 1, frozenset(_opened), valve, elephant))
+                best = max(best, released + tick(mins - 1, add_to(opened, curr), valve, elephant))
 
         return best
 

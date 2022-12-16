@@ -44,10 +44,9 @@ def part_1(input: str) -> int:
         max_release = max(tick(mins - 1, opened, valve) for valve in valves[curr].connected)
 
         if curr not in opened and valves[curr].flow > 0:
-            mins -= 1
-            valve_released = mins * valves[curr].flow
+            valve_released = (mins - 1) * valves[curr].flow
             for valve in valves[curr].connected:
-                max_release = max(max_release, valve_released + tick(mins - 1, add_to(opened, curr), valve))
+                max_release = max(max_release, valve_released + tick(mins - 2, add_to(opened, curr), valve))
 
         return max_release
 
@@ -65,10 +64,9 @@ def part_2(input: str) -> int:
         max_release = max(tick(mins - 1, opened, valve, elephant) for valve in valves[curr].connected)
 
         if curr not in opened and valves[curr].flow > 0:
-            mins -= 1
-            released = mins * valves[curr].flow
+            released = (mins - 1) * valves[curr].flow
             for valve in valves[curr].connected:
-                max_release = max(max_release, released + tick(mins - 1, add_to(opened, curr), valve, elephant))
+                max_release = max(max_release, released + tick(mins - 2, add_to(opened, curr), valve, elephant))
 
         return max_release
 

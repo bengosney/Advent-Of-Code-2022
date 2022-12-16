@@ -41,9 +41,7 @@ def part_1(input: str) -> int:
         if mins <= 0:
             return 0
 
-        max_release = 0
-        for valve in valves[curr].connected:
-            max_release = max(max_release, tick(mins - 1, opened, valve))
+        max_release = max(tick(mins - 1, opened, valve) for valve in valves[curr].connected)
 
         if curr not in opened and valves[curr].flow > 0:
             mins -= 1
@@ -64,17 +62,15 @@ def part_2(input: str) -> int:
         if mins <= 0:
             return tick(26, opened, "AA", False) if elephant else 0
 
-        best = 0
-        for valve in valves[curr].connected:
-            best = max(best, tick(mins - 1, opened, valve, elephant))
+        max_release = max(tick(mins - 1, opened, valve, elephant) for valve in valves[curr].connected)
 
         if curr not in opened and valves[curr].flow > 0:
             mins -= 1
             released = mins * valves[curr].flow
             for valve in valves[curr].connected:
-                best = max(best, released + tick(mins - 1, add_to(opened, curr), valve, elephant))
+                max_release = max(max_release, released + tick(mins - 1, add_to(opened, curr), valve, elephant))
 
-        return best
+        return max_release
 
     return tick(26, frozenset(), "AA", True)
 

@@ -1,9 +1,10 @@
 # Standard Library
+from collections import defaultdict
 from dataclasses import dataclass
-from typing import Self
+from typing import DefaultDict, Self
 
 # First Party
-from utils import no_input_skip, read_input  # noqa
+from utils import no_input_skip, read_input
 
 
 @dataclass(frozen=True)
@@ -50,21 +51,13 @@ SHAPES = [
 
 class Game:
     def __init__(self, jets: list[complex], shapes: list[Shape]) -> None:
-        self.board: dict[complex, str] = {}
-        for x in range(7):
-            self.board[complex(x, 0)] = "="
+        self.board: DefaultDict[complex, str] = defaultdict(lambda: ".")
         self.jets: list[complex] = jets
         self.shapes: list[Shape] = shapes
         self.rock: Shape | None = None
         self.rock_idx: int = 0
         self.jet_idx: int = 0
         self.spawn: int = SPAWN_GAP
-        self.last_jet: str = ""
-
-        self.draw_step = 0
-        self.pause: bool = False
-
-        self.cache = {}
 
     @property
     def height(self):
@@ -98,38 +91,55 @@ class Game:
             raise Exception("No rock to move down")
 
         rock = self.rock + DOWN
-        if any(r in self.board for r in rock.points):
+        if any(r in self.board for r in rock.points) or rock.bottom == 0:
             for r in self.rock.points:
-                self.board[r] = str(self.rock_idx % len(SHAPES))
+                self.board[r] = "#"
             self.spawn = max(self.spawn, self.rock.top + SPAWN_GAP)
             self.rock = None
         else:
             self.rock += DOWN
 
     def round(self):
+
         self.init_rock()
-        self.move()
-        self.down()
+        while self.rock is not None:
+            self.move()
+            self.down()
+
+    def play(self, rock_count: int) -> int:
+        rocks = rock_count
+        cache = {}
+        additional = 0
+        while rocks:
+            self.round()
+            rocks -= 1
+
+            key = (
+                self.rock_idx % len(self.shapes),
+                self.jet_idx % len(self.jets),
+                "".join([self.board.get(complex(i, self.height), " ") for i in range(7)]),
+            )
+
+            if key in cache and rocks > 5022:
+                cached_height, cached_rocks = cache[key]
+                additional += (self.height - cached_height) * (rocks // (cached_rocks - rocks))
+                rocks %= cached_rocks - rocks
+            cache[key] = (self.height + additional, rocks)
+
+        return self.height + additional
 
 
 def part_1(input_string: str) -> int:
     jets = [LEFT if d == "<" else RIGHT for d in input_string]
     game = Game(jets, SHAPES)
-
-    while game.rock_idx < 2023:
-        game.round()
-
-    return game.height
+    return game.play(2022)
 
 
 def part_2(input_string: str) -> int:
     jets = [LEFT if d == "<" else RIGHT for d in input_string]
     game = Game(jets, SHAPES)
 
-    while game.rock_idx < 1000000000000:
-        game.round()
-
-    return game.height
+    return game.play(1000000000000)
 
 
 # -- Tests
@@ -144,21 +154,26 @@ def test_part_1():
     assert part_1(test_input) == 3068
 
 
-# def test_part_2():
-#   test_input = get_example_input()
-#   assert part_2(test_input) == 1514285714288
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input) == 1514285714288
 
 
-# @no_input_skip
-# def test_part_1_real():
-#     real_input = read_input(__file__)
-#     assert part_1(real_input) is not None
+@no_input_skip
+def test_part_1_real():
+    real_input = read_input(__file__)
+    assert part_1(real_input) == 3083
 
 
-# @no_input_skip
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+@no_input_skip
+def test_part_2_real():
+    real_input = read_input(__file__)
+
+    ans = part_2(real_input)
+    print(ans)
+    print(1532183908048)
+    print(1532183908048 - ans)
+    assert ans == 1532183908048
 
 
 # -- Main
@@ -166,6 +181,5 @@ def test_part_1():
 if __name__ == "__main__":
     real_input = read_input(__file__)
 
-    # real_input = get_example_input()
     print(f"Part1: {part_1(real_input)}")
     print(f"Part2: {part_2(real_input)}")

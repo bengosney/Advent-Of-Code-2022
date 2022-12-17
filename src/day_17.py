@@ -1,15 +1,14 @@
 # Standard Library
-from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import cycle
-from typing import DefaultDict, Self
+from typing import Self
 
 # First Party
 from utils import no_input_skip, read_input  # noqa
 
 # Third Party
-from icecream import ic
+from rich.progress import Progress
 
 
 @dataclass(frozen=True)
@@ -68,7 +67,7 @@ SHAPES = [
 
 class Game:
     def __init__(self, jets: list[Vec], shapes: list[Shape]) -> None:
-        self.board: DefaultDict[Vec, str] = defaultdict(lambda: ".")
+        self.board: dict[Vec, str] = {}
         for x in range(7):
             self.board[Vec(x, 0)] = "="
         self.jets: Iterable[Vec] = cycle(jets)
@@ -85,6 +84,16 @@ class Game:
     @property
     def height(self):
         return self.spawn - SPAWN_GAP
+
+    def trim(self):
+        trim_to = 1000
+        to_delete = []
+        for vec in self.board.keys():
+            if vec.y < (self.height - trim_to):
+                to_delete.append(vec)
+
+        for vec in to_delete:
+            del self.board[vec]
 
     def init_rock(self) -> bool:
         if self.rock is None:
@@ -103,7 +112,7 @@ class Game:
 
         self.last_jet = "left" if m == LEFT else "right"
 
-        if any(self.board[r] != "." for r in rock.points):
+        if any(r in self.board for r in rock.points):
             return
 
         if rock.left >= 0 and rock.right <= 6:
@@ -114,7 +123,7 @@ class Game:
             raise Exception("No rock to move down")
 
         rock = self.rock + DOWN
-        if any(self.board[r] != "." for r in rock.points):
+        if any(r in self.board for r in rock.points):
             for r in self.rock.points:
                 self.board[r] = str(self.rock_count % len(SHAPES))
             self.spawn = max(self.spawn, self.rock.top + SPAWN_GAP)
@@ -124,12 +133,13 @@ class Game:
 
     def round(self, input: str = ""):
         if self.init_rock():
-            self.draw(f"Spawn Rock {self.spawn}")
+            # self.draw(f"Spawn Rock {self.spawn}")
+            pass
         self.move()
         # print(f"{self.jet_count} : {self.last_jet}")
-        self.draw(f"Jet {self.last_jet}")
+        # self.draw(f"Jet {self.last_jet}")
         self.down()
-        self.draw("Down")
+        # self.draw("Down")
 
     def draw(self, txt: str = "", pause: bool = True):
         return
@@ -144,30 +154,40 @@ class Game:
                 if self.rock and pos in self.rock:
                     print("@", end="")
                 else:
-                    print(self.board[pos], end="")
+                    print(self.board[pos] if pos in self.board else ".", end="")
             print("|")
         print("     +-------+")
         print(f"height: {self.height} rocks: {self.rock_count} jet count: {self.jet_count}")
-        input()
+        # input()
 
 
 def part_1(input_string: str) -> int:
-    ic(len(input_string))
     jets = [LEFT if d == "<" else RIGHT for d in input_string]
     game = Game(jets, SHAPES)
 
     while game.rock_count < 2023:
-        # while game.height < 3068:
         game.round()
     game.draw()
-
-    ic(game.rock_count)
 
     return game.height
 
 
-def part_2(input: str) -> int:
-    pass
+def part_2(input_string: str) -> int:
+    jets = [LEFT if d == "<" else RIGHT for d in input_string]
+    game = Game(jets, SHAPES)
+
+    rocks = 1000000000000
+    chunk = 10000
+    with Progress(transient=True) as progress:
+        task = progress.add_task("Running code", total=rocks)
+        while game.rock_count < rocks:
+            game.round()
+            if (game.rock_count % chunk) == 0:
+                progress.update(task, advance=chunk)
+                print(rocks - game.rock_count)
+                game.trim()
+
+    return game.height
 
 
 # -- Tests
@@ -183,8 +203,8 @@ def test_part_1():
 
 
 # def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+#    test_input = get_example_input()
+#    assert part_2(test_input) is not None
 
 
 # @no_input_skip

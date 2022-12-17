@@ -9,65 +9,53 @@ from utils import no_input_skip, read_input  # noqa
 
 
 @dataclass(frozen=True)
-class Vec:
-    x: int
-    y: int
-
-    def __add__(self, delta: Self) -> Self:
-        return Vec(self.x + delta.x, self.y + delta.y)
-
-    def __sub__(self, delta: Self) -> Self:
-        return Vec(self.x - delta.x, self.y - delta.y)
-
-
-@dataclass(frozen=True)
 class Shape:
-    points: list[Vec]
+    points: list[complex]
 
-    def __add__(self, delta: Vec) -> Self:
-        return Shape([vec + delta for vec in self.points])
+    def __add__(self, delta: complex) -> Self:
+        return Shape([p + delta for p in self.points])
 
-    def __contains__(self, pos: Vec) -> bool:
+    def __contains__(self, pos: complex) -> bool:
         return pos in self.points
 
     @property
     def left(self) -> int:
-        return min(p.x for p in self.points)
+        return min(int(p.real) for p in self.points)
 
     @property
     def right(self) -> int:
-        return max(p.x for p in self.points)
+        return max(int(p.real) for p in self.points)
 
     @property
     def bottom(self) -> int:
-        return min(p.y for p in self.points)
+        return min(int(p.imag) for p in self.points)
 
     @property
     def top(self) -> int:
-        return max(p.y for p in self.points)
+        return max(int(p.imag) for p in self.points)
 
 
 SPAWN_GAP = 4
 
-DOWN = Vec(0, -1)
-LEFT = Vec(-1, 0)
-RIGHT = Vec(1, 0)
+DOWN = complex(0, -1)
+LEFT = complex(-1, 0)
+RIGHT = complex(1, 0)
 
 SHAPES = [
-    Shape([Vec(0, 0), Vec(1, 0), Vec(2, 0), Vec(3, 0)]),
-    Shape([Vec(1, 0), Vec(0, 1), Vec(1, 1), Vec(2, 1), Vec(1, 2)]),
-    Shape([Vec(0, 0), Vec(1, 0), Vec(2, 0), Vec(2, 1), Vec(2, 2)]),
-    Shape([Vec(0, 0), Vec(0, 1), Vec(0, 2), Vec(0, 3)]),
-    Shape([Vec(0, 0), Vec(0, 1), Vec(1, 0), Vec(1, 1)]),
+    Shape([complex(0, 0), complex(1, 0), complex(2, 0), complex(3, 0)]),
+    Shape([complex(1, 0), complex(0, 1), complex(1, 1), complex(2, 1), complex(1, 2)]),
+    Shape([complex(0, 0), complex(1, 0), complex(2, 0), complex(2, 1), complex(2, 2)]),
+    Shape([complex(0, 0), complex(0, 1), complex(0, 2), complex(0, 3)]),
+    Shape([complex(0, 0), complex(0, 1), complex(1, 0), complex(1, 1)]),
 ]
 
 
 class Game:
-    def __init__(self, jets: list[Vec], shapes: list[Shape]) -> None:
-        self.board: dict[Vec, str] = {}
+    def __init__(self, jets: list[complex], shapes: list[Shape]) -> None:
+        self.board: dict[complex, str] = {}
         for x in range(7):
-            self.board[Vec(x, 0)] = "="
-        self.jets: Iterable[Vec] = cycle(jets)
+            self.board[complex(x, 0)] = "="
+        self.jets: Iterable[complex] = cycle(jets)
         self.shapes: Iterable[Shape] = cycle(shapes)
         self.rock: Shape | None = None
         self.rock_count: int = 0
@@ -82,19 +70,9 @@ class Game:
     def height(self):
         return self.spawn - SPAWN_GAP
 
-    def trim(self):
-        trim_to = 1000
-        to_delete = []
-        for vec in self.board.keys():
-            if vec.y < (self.height - trim_to):
-                to_delete.append(vec)
-
-        for vec in to_delete:
-            del self.board[vec]
-
     def init_rock(self) -> bool:
         if self.rock is None:
-            self.rock = next(self.shapes) + Vec(2, self.spawn)
+            self.rock = next(self.shapes) + complex(2, self.spawn)
             self.rock_count += 1
             return True
         return False
@@ -129,33 +107,9 @@ class Game:
             self.rock += DOWN
 
     def round(self, input: str = ""):
-        if self.init_rock():
-            # self.draw(f"Spawn Rock {self.spawn}")
-            pass
+        self.init_rock()
         self.move()
-        # print(f"{self.jet_count} : {self.last_jet}")
-        # self.draw(f"Jet {self.last_jet}")
         self.down()
-        # self.draw("Down")
-
-    def draw(self, txt: str = "", pause: bool = True):
-        return
-        self.draw_step += 1
-
-        print(f"\n=== {self.draw_step} {txt}")
-
-        for y in range(self.spawn + 5, 0, -1):
-            print(f"{y:4} |", end="")
-            for x in range(7):
-                pos = Vec(x, y)
-                if self.rock and pos in self.rock:
-                    print("@", end="")
-                else:
-                    print(self.board[pos] if pos in self.board else ".", end="")
-            print("|")
-        print("     +-------+")
-        print(f"height: {self.height} rocks: {self.rock_count} jet count: {self.jet_count}")
-        # input()
 
 
 def part_1(input_string: str) -> int:
@@ -164,7 +118,6 @@ def part_1(input_string: str) -> int:
 
     while game.rock_count < 2023:
         game.round()
-    game.draw()
 
     return game.height
 
@@ -180,7 +133,6 @@ def part_2(input_string: str) -> int:
         game.round()
         if (game.rock_count % chunk) == 0:
             print(rocks - game.rock_count)
-            game.trim()
 
     return game.height
 

@@ -7,9 +7,6 @@ from typing import Self
 # First Party
 from utils import no_input_skip, read_input  # noqa
 
-# Third Party
-from rich.progress import Progress
-
 
 @dataclass(frozen=True)
 class Vec:
@@ -178,14 +175,12 @@ def part_2(input_string: str) -> int:
 
     rocks = 1000000000000
     chunk = 10000
-    with Progress(transient=True) as progress:
-        task = progress.add_task("Running code", total=rocks)
-        while game.rock_count < rocks:
-            game.round()
-            if (game.rock_count % chunk) == 0:
-                progress.update(task, advance=chunk)
-                print(rocks - game.rock_count)
-                game.trim()
+
+    while game.rock_count < rocks:
+        game.round()
+        if (game.rock_count % chunk) == 0:
+            print(rocks - game.rock_count)
+            game.trim()
 
     return game.height
 

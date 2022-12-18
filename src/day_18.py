@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Self
 
 # First Party
-from utils import no_input_skip, read_input  # noqa
+from utils import no_input_skip, read_input
 
 
 @dataclass(frozen=True)
@@ -74,10 +74,10 @@ def test_part_1():
 #     assert part_2(test_input) is not None
 
 
-# @no_input_skip
-# def test_part_1_real():
-#     real_input = read_input(__file__)
-#     assert part_1(real_input) is not None
+@no_input_skip
+def test_part_1_real():
+    real_input = read_input(__file__)
+    assert part_1(real_input) == 4604
 
 
 # @no_input_skip

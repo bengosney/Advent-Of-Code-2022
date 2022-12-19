@@ -23,6 +23,22 @@ class Robot:
         return all(c <= resources[t] for t, c in self.cost.items())
 
 
+@dataclass(frozen=True)
+class resources:
+    ore: int = 0
+    clay: int = 0
+    obsidian: int = 0
+    geode: int = 0
+
+    def __add__(self, other: Self):
+        return resources(
+            self.ore + other.ore,
+            self.clay + other.clay,
+            self.obsidian + other.obsidian,
+            self.geode + other.geode,
+        )
+
+
 @dataclass
 class Sim:
     blueprints: dict[str, Robot]
@@ -76,37 +92,36 @@ class Sim:
 
         return self.resources[GEODE]
 
-    @classmethod
-    def parse(cls: type[Self], line: str) -> Self:
-        type_regex = r"Each (\w+)"
-        cost_regex = r"(costs|and) (\d+) (\w+)"
 
-        robot_defs: dict[str, Robot] = {}
+def parse(line: str):
+    type_regex = r"Each (\w+)"
+    cost_regex = r"(costs|and) (\d+) (\w+)"
 
-        _, robots = line.split(": ")
-        for raw_robot in robots.split(". "):
-            type_res = re.findall(type_regex, raw_robot, re.MULTILINE)[0]
-            cost_res = re.findall(cost_regex, raw_robot, re.MULTILINE)
+    robot_defs: dict[str, Robot] = {}
 
-            costs: dict[str, int] = {}
-            for cost in cost_res:
-                _, c, t = cost
-                costs[t] = int(c)
+    _, robots = line.split(": ")
+    for raw_robot in robots.split(". "):
+        type_res = re.findall(type_regex, raw_robot, re.MULTILINE)[0]
+        cost_res = re.findall(cost_regex, raw_robot, re.MULTILINE)
 
-            robot_defs[type_res] = Robot(costs, type_res)
+        costs: dict[str, int] = {}
+        for cost in cost_res:
+            _, c, t = cost
+            costs[t] = int(c)
 
-        # reversed(robot_defs)
-        sim = cls(robot_defs, defaultdict(lambda: 0), defaultdict(lambda: 0))
-        sim.robots[ORE] = 1
+        robot_defs[type_res] = Robot(costs, type_res)
 
-        return sim
+    sim = cls(robot_defs, defaultdict(lambda: 0), defaultdict(lambda: 0))
+    sim.robots[ORE] = 1
+
+    return sim
 
 
 def part_1(input: str) -> int:
     sims: list[Sim] = []
 
     for line in input.split("\n"):
-        sims.append(Sim.parse(line))
+        sims.append(parse(line))
         break
 
     return sum(s.play() for s in sims)

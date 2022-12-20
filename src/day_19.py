@@ -111,10 +111,10 @@ def parse(line: str):
 
         robot_defs[type_res] = Robot(costs, type_res)
 
-    sim = cls(robot_defs, defaultdict(lambda: 0), defaultdict(lambda: 0))
-    sim.robots[ORE] = 1
+    # sim = cls(robot_defs, defaultdict(lambda: 0), defaultdict(lambda: 0))
+    # sim.robots[ORE] = 1
 
-    return sim
+    # return sim
 
 
 def part_1(input: str) -> int:
@@ -139,9 +139,9 @@ def get_example_input() -> str:
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian."""  # noqa
 
 
-def test_part_1():
-    test_input = get_example_input()
-    assert part_1(test_input) == 33
+# def test_part_1():
+#     test_input = get_example_input()
+#     assert part_1(test_input) == 33
 
 
 # def test_part_2():

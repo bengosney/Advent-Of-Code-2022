@@ -1,21 +1,12 @@
 # Standard Library
 import operator
 from collections.abc import Callable
-from typing import Literal
 
 # First Party
 from utils import no_input_skip, read_input
 
-Ops = Literal["+"] | Literal["-"] | Literal["*"] | Literal["/"] | Literal["=="]
-
-Monkeys = dict[str, tuple[str, Callable[[int, int], int | bool], str] | int]
-ops: dict[Ops, Callable[[int, int], int | bool]] = {
-    "+": operator.add,
-    "-": operator.sub,
-    "*": operator.mul,
-    "/": operator.truediv,
-    "==": operator.eq,
-}
+Op = tuple[str, Callable[[int, int], int | bool], str]
+Monkeys = dict[str, Op | int]
 
 
 def resolve(monkey: str, monkeys: Monkeys) -> tuple[int, bool]:
@@ -27,18 +18,27 @@ def resolve(monkey: str, monkeys: Monkeys) -> tuple[int, bool]:
     left, lefthuman = resolve(monk[0], monkeys)
     right, righthuman = resolve(monk[2], monkeys)
 
-    return int(ops[monk[1]](left, right)), lefthuman or righthuman or monk[0] == "humn" or monk[1] == "humn"
+    return int(monk[1](left, right)), lefthuman or righthuman or monk[0] == "humn" or monk[1] == "humn"
 
 
 def parse(input: str) -> Monkeys:
     monkeys: Monkeys = {}
     for line in input.split("\n"):
         monkey, job = line.split(": ")
-        if job.isnumeric():
-            monkeys[monkey] = int(job)
-        else:
-            left, op, right = job.split(" ")
-            monkeys[monkey] = (left, op, right)
+
+        match job.split():
+            case left, "+", right:
+                monkeys[monkey] = (left, operator.add, right)
+            case left, "-", right:
+                monkeys[monkey] = (left, operator.sub, right)
+            case left, "*", right:
+                monkeys[monkey] = (left, operator.mul, right)
+            case left, "/", right:
+                monkeys[monkey] = (left, operator.floordiv, right)
+            case (num,):
+                monkeys[monkey] = int(num)
+            case _:
+                raise ValueError(f"Unhandled job: {job}")
 
     return monkeys
 
@@ -53,8 +53,12 @@ def part_1(input: str) -> int:
 def part_2(input: str) -> int:
     monkeys = parse(input)
     root = monkeys["root"]
+
     if isinstance(root, int):
         raise ValueError("root is int?")
+
+    if not isinstance(monkeys["humn"], int):
+        raise ValueError("humn is not int")
 
     left, lefthumn = resolve(root[0], monkeys)
     right, _ = resolve(root[2], monkeys)
@@ -70,7 +74,7 @@ def part_2(input: str) -> int:
         ans, _ = resolve(to_check, monkeys)
         return abs(ans - correct)
 
-    while (d := diff()) != 0:
+    while (d := diff()) != 0 and monkeys["humn"]:
         monkeys["humn"] += (d // 100) + 1
 
     return monkeys["humn"]

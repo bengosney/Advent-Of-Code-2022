@@ -1,26 +1,36 @@
 # Standard Library
 import operator
+from collections.abc import Callable
+from typing import Literal
 
 # First Party
-from utils import no_input_skip, read_input  # noqa
+from utils import no_input_skip, read_input
 
-Monkeys = dict[str, tuple[str, str, str] | int]
-Ops = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.truediv}
+Ops = Literal["+"] | Literal["-"] | Literal["*"] | Literal["/"] | Literal["=="]
+
+Monkeys = dict[str, tuple[str, Callable[[int, int], int | bool], str] | int]
+ops: dict[Ops, Callable[[int, int], int | bool]] = {
+    "+": operator.add,
+    "-": operator.sub,
+    "*": operator.mul,
+    "/": operator.truediv,
+    "==": operator.eq,
+}
 
 
-def resolve(monkey: str, monkeys: Monkeys) -> int:
+def resolve(monkey: str, monkeys: Monkeys) -> tuple[int, bool]:
     monk = monkeys[monkey]
 
     if isinstance(monk, int):
-        return monk
+        return monk, False
 
-    left = resolve(monk[0], monkeys)
-    right = resolve(monk[2], monkeys)
+    left, lefthuman = resolve(monk[0], monkeys)
+    right, righthuman = resolve(monk[2], monkeys)
 
-    return int(Ops[monk[1]](left, right))
+    return int(ops[monk[1]](left, right)), lefthuman or righthuman or monk[0] == "humn" or monk[1] == "humn"
 
 
-def part_1(input: str) -> int:
+def parse(input: str) -> Monkeys:
     monkeys: Monkeys = {}
     for line in input.split("\n"):
         monkey, job = line.split(": ")
@@ -30,11 +40,40 @@ def part_1(input: str) -> int:
             left, op, right = job.split(" ")
             monkeys[monkey] = (left, op, right)
 
-    return resolve("root", monkeys)
+    return monkeys
+
+
+def part_1(input: str) -> int:
+    monkeys = parse(input)
+
+    ans, _ = resolve("root", monkeys)
+    return ans
 
 
 def part_2(input: str) -> int:
-    pass
+    monkeys = parse(input)
+    root = monkeys["root"]
+    if isinstance(root, int):
+        raise ValueError("root is int?")
+
+    left, lefthumn = resolve(root[0], monkeys)
+    right, _ = resolve(root[2], monkeys)
+
+    if lefthumn:
+        correct = right
+        to_check = root[0]
+    else:
+        correct = left
+        to_check = root[2]
+
+    def diff() -> int:
+        ans, _ = resolve(to_check, monkeys)
+        return abs(ans - correct)
+
+    while (d := diff()) != 0:
+        monkeys["humn"] += (d // 100) + 1
+
+    return monkeys["humn"]
 
 
 # -- Tests
@@ -63,21 +102,21 @@ def test_part_1():
     assert part_1(test_input) == 152
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input) == 301
 
 
-# @no_input_skip
-# def test_part_1_real():
-#     real_input = read_input(__file__)
-#     assert part_1(real_input) is not None
+@no_input_skip
+def test_part_1_real():
+    real_input = read_input(__file__)
+    assert part_1(real_input) == 70674280581468
 
 
-# @no_input_skip
-# def test_part_2_real():
-#     real_input = read_input(__file__)
-#     assert part_2(real_input) is not None
+@no_input_skip
+def test_part_2_real():
+    real_input = read_input(__file__)
+    assert part_2(real_input) == 3243420789721
 
 
 # -- Main

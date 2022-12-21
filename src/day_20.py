@@ -1,23 +1,20 @@
 # Standard Library
 from collections import deque
+from collections.abc import Iterable
 
 # First Party
 from utils import no_input_skip, read_input
 
 
-def mix(input_numbers: list[int]) -> list[int]:
-    numbers = deque(input_numbers)
-
-    for n in input_numbers:
-        rot = numbers.index(n)
-        numbers.rotate(-rot)
+def mix(numbers: deque[tuple[int, int]]) -> list[int]:
+    for n in list(numbers):
+        v, _ = n
+        numbers.rotate(-numbers.index(n, 0))
         numbers.popleft()
-        numbers.rotate(-n)
-        numbers.insert(0, n)
-        numbers.rotate(rot + n)
+        numbers.rotate(-v)
+        numbers.appendleft(n)
 
-    numbers.rotate(-1)
-    return list(numbers)
+    return [n[0] for n in numbers]
 
 
 def grove_numbers(numbers: list[int]) -> list[int]:
@@ -29,9 +26,15 @@ def grove_numbers(numbers: list[int]) -> list[int]:
     ]
 
 
+def intput_to_pairs(input: str) -> Iterable[tuple[int, int]]:
+    for i, n in enumerate(map(int, input.split("\n"))):
+        yield (n, n * i)
+
+
 def part_1(input: str) -> int:
-    input_numbers = list(map(int, input.split("\n")))
-    numbers = mix(input_numbers)
+    numbers = deque(intput_to_pairs(input))
+
+    numbers = mix(numbers)
     ans = grove_numbers(numbers)
 
     return sum(ans)
@@ -56,26 +59,15 @@ def get_example_input() -> str:
 
 def test_part_1():
     test_input = get_example_input()
-    assert part_1(test_input) is not None
-
-
-def test_mix():
-    test_input = get_example_input()
-    mixed = mix(list(map(int, test_input.split("\n"))))
-    answer = [1, 2, -3, 4, 0, 3, -2]
-    print(mixed)
-    print(answer)
-
-    assert mixed == answer
+    assert part_1(test_input) == 3
 
 
 def test_grove():
     test_input = get_example_input()
-    mixed = mix(list(map(int, test_input.split("\n"))))
+    numbers = deque(intput_to_pairs(test_input))
+    mixed = mix(numbers)
     grove = grove_numbers(mixed)
     answer = [4, -3, 2]
-    print(grove)
-    print(answer)
 
     assert grove == answer
 
@@ -83,11 +75,10 @@ def test_grove():
 @no_input_skip
 def test_real_grove():
     test_input = read_input(__file__)
-    mixed = mix(list(map(int, test_input.split("\n"))))
+    numbers = deque(intput_to_pairs(test_input))
+    mixed = mix(numbers)
     grove = grove_numbers(mixed)
     answer = [1608, -2852, 8469]
-    print(grove)
-    print(answer)
 
     assert grove == answer
 

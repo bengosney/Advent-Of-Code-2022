@@ -100,6 +100,3 @@ go: install $(CURRENT_PY) $(CURRENT_INPUT) ## Setup current day and start runing
 
 today: install $(CURRENT_PY) $(CURRENT_INPUT) ## Setup current day and start runing test monitor
 	ptw --runner "pytest --testmon" --onfail "notify-send \"Failed\"" --onpass "notify-send \"Passed\"" $(CURRENT_PY)
-
-day_%: install src/$@.py input/$@.txt
-	ptw --runner "pytest --testmon" --onfail "notify-send \"Failed\"" --onpass "notify-send \"Passed\"" src/$@.py

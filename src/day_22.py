@@ -19,13 +19,14 @@ class Vec:
 
 
 Move = Literal["R"] | Literal["L"]
+Tile = Literal["."] | Literal["#"] | Literal[">"] | Literal["v"] | Literal["<"] | Literal["^"]
 
 D_UP = Vec(0, -1)
 D_RIGHT = Vec(1, 0)
 D_DOWN = Vec(0, 1)
 D_LEFT = Vec(-1, 0)
 
-ARROWS = {
+ARROWS: dict[Vec, Tile] = {
     D_RIGHT: ">",
     D_DOWN: "v",
     D_UP: "^",
@@ -58,29 +59,36 @@ def get_moves(unparsed_moves: str) -> Iterable[Move | int]:
             yield turn
 
 
-def part_1(input: str) -> int:
-    unparsed_board, unparsed_moves = input.split("\n\n")
+def parse_board(unparsed_board: str) -> tuple[dict[Vec, Tile], Vec, int, int]:
+    position: Vec | None = None
+    board: dict[Vec, Tile] = {}
 
-    moves = get_moves(unparsed_moves)
-
-    position = None
-    facing = deque([D_RIGHT, D_DOWN, D_LEFT, D_UP])
-    board = {}
-
-    max_y = 0
-    max_x = 0
+    max_y: int = 0
+    max_x: int = 0
 
     for y, line in enumerate(unparsed_board.split("\n")):
         max_y = max(max_y, y)
         for x, i in enumerate(line):
             max_x = max(max_x, x)
-            if i in [".", "#"]:
+            if i == "." or i == "#":
                 board[Vec(x, y)] = i
+
             if i == "." and position is None:
                 position = Vec(x, y)
 
     if position is None:
         raise ValueError("No position found")
+
+    return board, position, max_x, max_y
+
+
+def part_1(input: str) -> int:
+    unparsed_board, unparsed_moves = input.split("\n\n")
+
+    moves = get_moves(unparsed_moves)
+    board, position, max_x, max_y = parse_board(unparsed_board)
+
+    facing = deque([D_RIGHT, D_DOWN, D_LEFT, D_UP])
 
     for move in moves:
         match move:
@@ -97,7 +105,7 @@ def part_1(input: str) -> int:
                         if facing[0] == D_DOWN:
                             next_position = Vec(next_position.x, 0)
                         if facing[0] == D_LEFT:
-                            next_position = Vec(max_y, next_position.y)
+                            next_position = Vec(max_x, next_position.y)
                         if facing[0] == D_RIGHT:
                             next_position = Vec(0, next_position.y)
                         while next_position not in board:

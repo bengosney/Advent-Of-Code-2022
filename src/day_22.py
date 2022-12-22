@@ -3,10 +3,14 @@ import re
 from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass
+from functools import partial
 from typing import Literal, Self
 
 # First Party
 from utils import no_input_skip, read_input
+
+# Third Party
+from icecream import ic
 
 
 @dataclass(frozen=True)
@@ -19,7 +23,7 @@ class Vec:
 
 
 Move = Literal["R"] | Literal["L"]
-Tile = Literal["."] | Literal["#"] | Literal[">"] | Literal["v"] | Literal["<"] | Literal["^"]
+Tile = str  # Literal["."] | Literal["#"] | Literal[">"] | Literal["v"] | Literal["<"] | Literal["^"]
 
 D_UP = Vec(0, -1)
 D_RIGHT = Vec(1, 0)
@@ -79,7 +83,7 @@ def parse_board(unparsed_board: str) -> tuple[dict[Vec, Tile], Vec, int, int]:
     if position is None:
         raise ValueError("No position found")
 
-    return board, position, max_x, max_y
+    return board, position, max_x + 1, max_y + 1
 
 
 def part_1(input: str) -> int:
@@ -122,7 +126,57 @@ def part_1(input: str) -> int:
 
 
 def part_2(input: str) -> int:
-    pass
+    unparsed_board, unparsed_moves = input.split("\n\n")
+
+    moves = get_moves(unparsed_moves)
+    board, position, max_x, max_y = parse_board(unparsed_board)
+    _draw = partial(draw, board=board, max_x=max_x, max_y=max_y)
+
+    ic(max_x, max_y)
+    tile_size = max(max_x, max_y) // 4
+    ic(tile_size)
+
+    for y in range(max_y):
+        for x in range(max_x):
+            p = Vec(x, y)
+            if p not in board:
+                board[p] = str((x // tile_size) + (y // tile_size))
+
+    _draw()
+
+    return 0
+
+    facing = deque([D_RIGHT, D_DOWN, D_LEFT, D_UP])
+
+    for move in moves:
+        match move:
+            case "L":
+                facing.rotate(1)
+            case "R":
+                facing.rotate(-1)
+            case int():
+                for _ in range(move):
+                    next_position = position + facing[0]
+                    if next_position not in board:
+                        if facing[0] == D_UP:
+                            next_position = Vec(next_position.x, max_y)
+                        if facing[0] == D_DOWN:
+                            next_position = Vec(next_position.x, 0)
+                        if facing[0] == D_LEFT:
+                            next_position = Vec(max_x, next_position.y)
+                        if facing[0] == D_RIGHT:
+                            next_position = Vec(0, next_position.y)
+                        while next_position not in board:
+                            next_position = next_position + facing[0]
+
+                    if board[next_position] == "#":
+                        break
+                    board[position] = ARROWS[facing[0]]
+                    position = next_position
+            case _:
+                raise ValueError(f"Unrecognised move: {move}")
+
+    return (1000 * (position.y + 1)) + (4 * (position.x + 1)) + SCORES[facing[0]]
 
 
 # -- Tests
@@ -150,9 +204,9 @@ def test_part_1():
     assert part_1(test_input) == 6032
 
 
-# def test_part_2():
-#     test_input = get_example_input()
-#     assert part_2(test_input) is not None
+def test_part_2():
+    test_input = get_example_input()
+    assert part_2(test_input) == 5031
 
 
 @no_input_skip

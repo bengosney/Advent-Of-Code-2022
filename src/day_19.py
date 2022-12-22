@@ -3,24 +3,19 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Self
+from typing import Literal, Self
 
 # First Party
 from utils import no_input_skip, read_input  # noqa
 
-ORE = "ore"
-CLAY = "clay"
-OBSIDIAN = "obsidian"
-GEODE = "geode"
+Ore = Literal["ore"]
+Clay = Literal["clay"]
+Obsidian = Literal["obsidian"]
+Geode = Literal["geode"]
 
+Types = Ore | Clay | Obsidian | Geode
 
-@dataclass(frozen=True)
-class Robot:
-    cost: dict[str, int]
-    type: str
-
-    def can_build(self, resources: dict[str, int]) -> bool:
-        return all(c <= resources[t] for t, c in self.cost.items())
+Actions = None | Types
 
 
 @dataclass(frozen=True)
@@ -37,6 +32,15 @@ class resources:
             self.obsidian + other.obsidian,
             self.geode + other.geode,
         )
+
+
+@dataclass(frozen=True)
+class Robot:
+    cost: dict[Types, int]
+    type: str
+
+    def can_build(self, resources: dict[str, int]) -> bool:
+        return all(c <= resources[t] for t, c in self.cost.items())
 
 
 @dataclass
@@ -65,7 +69,7 @@ class Sim:
 
     def round(self):
         new = defaultdict(lambda: 0)
-        to_try = [GEODE]
+        to_try = [Geode]
 
         to_try.extend(_type for _type in [ORE, CLAY, OBSIDIAN] if self.robots[_type] < self.sum[_type])
         for _type in to_try:
@@ -97,14 +101,14 @@ def parse(line: str):
     type_regex = r"Each (\w+)"
     cost_regex = r"(costs|and) (\d+) (\w+)"
 
-    robot_defs: dict[str, Robot] = {}
+    robot_defs: dict[Types, Robot] = {}
 
     _, robots = line.split(": ")
     for raw_robot in robots.split(". "):
         type_res = re.findall(type_regex, raw_robot, re.MULTILINE)[0]
         cost_res = re.findall(cost_regex, raw_robot, re.MULTILINE)
 
-        costs: dict[str, int] = {}
+        costs: dict[Types, int] = {}
         for cost in cost_res:
             _, c, t = cost
             costs[t] = int(c)
@@ -116,9 +120,15 @@ def parse(line: str):
 
     # return sim
 
+    return robot_defs
+
+
+def round(res: resources, robots: resources, minute: int, action: Actions) -> int:
+    pass
+
 
 def part_1(input: str) -> int:
-    sims: list[Sim] = []
+    sims: list[dict[str, Robot]] = []
 
     for line in input.split("\n"):
         sims.append(parse(line))

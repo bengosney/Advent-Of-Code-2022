@@ -23,26 +23,70 @@ class Vec:
 
 
 Move = Literal["R"] | Literal["L"]
-Tile = str  # Literal["."] | Literal["#"] | Literal[">"] | Literal["v"] | Literal["<"] | Literal["^"]
 
-D_UP = Vec(0, -1)
-D_RIGHT = Vec(1, 0)
-D_DOWN = Vec(0, 1)
-D_LEFT = Vec(-1, 0)
 
-ARROWS: dict[Vec, Tile] = {
-    D_RIGHT: ">",
-    D_DOWN: "v",
-    D_UP: "^",
-    D_LEFT: "<",
-}
+@dataclass(frozen=True)
+class Tile:
+    c: Literal["."] | Literal["#"] | Literal[">"] | Literal["v"] | Literal["<"] | Literal["^"]
+    vec: Vec
 
-SCORES: dict[Vec, int] = {
-    D_RIGHT: 0,
-    D_DOWN: 1,
-    D_UP: 3,
-    D_LEFT: 2,
-}
+    def __eq__(self, __o: Self) -> bool:
+        match __o:
+            case str():
+                return self.c == __o
+            case _:
+                return self.c == __o.c
+
+    def __str__(self) -> str:
+        return self.c
+
+    @property
+    def x(self) -> int:
+        return self.vec.x
+
+    @property
+    def y(self) -> int:
+        return self.vec.y
+
+
+@dataclass(frozen=True)
+class directions:
+    up = Vec(0, -1)
+    right = Vec(1, 0)
+    down = Vec(0, 1)
+    left = Vec(-1, 0)
+
+    def __iter__(self):
+        yield self.right
+        yield self.down
+        yield self.left
+        yield self.up
+
+    @classmethod
+    def score(cls, dir: Vec) -> int:
+        match dir:
+            case cls.right:
+                return 0
+            case cls.down:
+                return 1
+            case cls.left:
+                return 3
+            case cls.up:
+                return 3
+
+    @classmethod
+    def arrows(cls, dir: Vec, pos: Vec) -> Tile:
+        match dir:
+            case cls.right:
+                return Tile(">", pos)
+            case cls.down:
+                return Tile("v", pos)
+            case cls.up:
+                return Tile("^", pos)
+            case cls.left:
+                return Tile("<", pos)
+            case _:
+                raise Exception("Unknown directions")
 
 
 def draw(board, max_x, max_y):
@@ -75,7 +119,7 @@ def parse_board(unparsed_board: str) -> tuple[dict[Vec, Tile], Vec, int, int]:
         for x, i in enumerate(line):
             max_x = max(max_x, x)
             if i == "." or i == "#":
-                board[Vec(x, y)] = i
+                board[Vec(x, y)] = Tile(i, Vec(x, y))
 
             if i == "." and position is None:
                 position = Vec(x, y)
@@ -92,7 +136,7 @@ def part_1(input: str) -> int:
     moves = get_moves(unparsed_moves)
     board, position, max_x, max_y = parse_board(unparsed_board)
 
-    facing = deque([D_RIGHT, D_DOWN, D_LEFT, D_UP])
+    facing = deque(directions())
 
     for move in moves:
         match move:
@@ -104,25 +148,27 @@ def part_1(input: str) -> int:
                 for _ in range(move):
                     next_position = position + facing[0]
                     if next_position not in board:
-                        if facing[0] == D_UP:
+                        if facing[0] == directions.up:
                             next_position = Vec(next_position.x, max_y)
-                        if facing[0] == D_DOWN:
+                        if facing[0] == directions.down:
                             next_position = Vec(next_position.x, 0)
-                        if facing[0] == D_LEFT:
+                        if facing[0] == directions.left:
                             next_position = Vec(max_x, next_position.y)
-                        if facing[0] == D_RIGHT:
+                        if facing[0] == directions.right:
                             next_position = Vec(0, next_position.y)
                         while next_position not in board:
                             next_position = next_position + facing[0]
 
                     if board[next_position] == "#":
                         break
-                    board[position] = ARROWS[facing[0]]
+                    board[position] = directions.arrows(facing[0], board[position].vec)
                     position = next_position
             case _:
                 raise ValueError(f"Unrecognised move: {move}")
 
-    return (1000 * (position.y + 1)) + (4 * (position.x + 1)) + SCORES[facing[0]]
+    final_tile = board[position]
+
+    return (1000 * (final_tile.y + 1)) + (4 * (final_tile.x + 1)) + directions.score(facing[0])
 
 
 def part_2(input: str) -> int:
@@ -140,7 +186,7 @@ def part_2(input: str) -> int:
         for x in range(max_x):
             p = Vec(x, y)
             if p not in board:
-                board[p] = str((x // tile_size) + (y // tile_size))
+                board[p] = Tile(str((x // tile_size) + (y // tile_size)))
 
     _draw()
 

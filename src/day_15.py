@@ -63,7 +63,7 @@ def get_sensors(input: str) -> Iterable[Sensor]:
         yield Sensor(Vec(*map(int, matches[0])), Vec(*map(int, matches[1])))
 
 
-def part_1(input: str, test_row: int) -> int:
+def part_1(input: str, test_row: int = 2000000) -> int:
     sensors = get_sensors(input)
 
     covers = set()
@@ -76,7 +76,7 @@ def part_1(input: str, test_row: int) -> int:
     return len(covers - beacons)
 
 
-def part_2(input: str, max_pos: int) -> int:
+def part_2(input: str, max_pos: int = 4000000) -> int:
     sensors = list(get_sensors(input))
 
     for i in range(len(sensors)):

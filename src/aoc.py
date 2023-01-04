@@ -1,4 +1,5 @@
 # Standard Library
+import contextlib
 from collections.abc import Callable
 from importlib import import_module
 from pathlib import Path
@@ -19,7 +20,7 @@ app = typer.Typer()
 
 def time_it(day: str, iterations: int = 1, progress: Callable = lambda: None) -> tuple[float, float]:
     module = import_module(day)
-    input = read_input(day)
+    input_str = read_input(day)
 
     times: dict[int, list[float]] = {}
 
@@ -27,7 +28,8 @@ def time_it(day: str, iterations: int = 1, progress: Callable = lambda: None) ->
         times[i] = []
         for _ in range(iterations):
             start = time()
-            getattr(module, f"part_{i}")(input)
+            with contextlib.suppress(Exception):
+                getattr(module, f"part_{i}")(input_str)
             times[i].append(time() - start)
             progress()
 
@@ -59,13 +61,16 @@ def benchmark(iterations: int = 10, days: list[str] = []) -> None:
 
 def run_day(day: str, progress: Callable = lambda: None) -> tuple[float, float]:
     module = import_module(day)
-    input = read_input(day)
+    input_str = read_input(day)
 
-    part_1 = getattr(module, "part_1")(input)
-    progress()
+    part_1 = 0
+    part_2 = 0
+    with contextlib.suppress(Exception):
+        part_1 = getattr(module, "part_1")(input_str)
+        progress()
 
-    part_2 = getattr(module, "part_2")(input)
-    progress()
+        part_2 = getattr(module, "part_2")(input_str)
+        progress()
 
     return part_1, part_2
 
